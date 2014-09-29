@@ -12508,7 +12508,8 @@ int main()
     cu_document_free (&doc, TRUE);
 
     nevent_counts_t *ctable = cu_nc_count_table_new( );
-    cu_count_untyped_nchains (ctable, nchains->pdata, nchains->len);
+    cu_count_untyped_nchains (
+        ctable, (nchain_untyped_t **) nchains->pdata, nchains->len);
 
     for (int c=0; c < nchains->len; c++) {
         nchain_untyped_t *nchain = 
