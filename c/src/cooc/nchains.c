@@ -50,25 +50,26 @@ GPtrArray *cu_extract_nar_chains_simple(
         g_hash_table_size (nchains));
 
     GHashTableIter iter;
-    char *prot;
-    GPtrArray *events;
+    gpointer prot;
+    gpointer events;
 
     g_hash_table_iter_init (&iter, nchains);
     while (g_hash_table_iter_next (&iter, &prot, &events))
     {
 
-        g_ptr_array_set_size (events, events->len);
+        g_ptr_array_set_size (
+            (GPtrArray *) events, ((GPtrArray *) events)->len);
 
         nchain_untyped_t *nchain = NULL;
         nchain = (nchain_untyped_t *) malloc (sizeof(nchain_untyped_t));
-        nchain->protag = prot;
-        nchain->events = (char **) events->pdata;
-        nchain->num_events = events->len;
-        g_ptr_array_free (events, FALSE);
+        nchain->protag = (char *) prot;
+        nchain->events = (char **) ((GPtrArray *) events)->pdata;
+        nchain->num_events = ((GPtrArray *) events)->len;
+        g_ptr_array_free ((GPtrArray *) events, FALSE);
         g_ptr_array_add (nchains_arr, (gpointer) nchain);
     }
 
-    g_ptr_array_sort (nchains_arr, nchain_len_cmp);
+    g_ptr_array_sort (nchains_arr, (GCompareFunc) nchain_len_cmp);
     g_hash_table_destroy (nchains);
 
     return nchains_arr; 
@@ -81,9 +82,9 @@ nevent_counts_t *cu_nc_count_table_new()
     nevent_counts_t *nc_table = NULL;
     nc_table = (nevent_counts_t *) malloc (sizeof(nevent_counts_t));
     nc_table->joint = g_hash_table_new_full (
-        g_str_hash, g_str_equal, free, g_hash_table_destroy);
+        g_str_hash, g_str_equal, free, (GDestroyNotify) g_hash_table_destroy);
     nc_table->marginal = g_hash_table_new_full (
-        g_str_hash, g_str_equal, free, g_hash_table_destroy);
+        g_str_hash, g_str_equal, free, (GDestroyNotify) g_hash_table_destroy);
     nc_table->totals = g_hash_table_new_full (
         g_str_hash, g_str_equal, free, free);
     return nc_table;
@@ -280,4 +281,83 @@ void cu_untyped_nchain_free (
     free ((*nchain)->protag);
     free ((*nchain));
     *nchain = NULL;
+}
+
+void cu_nc_count_table_free(
+    nevent_counts_t ** ctables
+) {
+
+    g_hash_table_destroy ((*ctables)->joint);
+    g_hash_table_destroy ((*ctables)->marginal);
+    g_hash_table_destroy ((*ctables)->totals);
+
+    free ((*ctables));
+    *ctables = NULL;
+
+}
+
+void cu_nc_count_table_dump(
+    nevent_counts_t *ctables
+) {
+
+    GHashTableIter pr_iter;
+    gpointer prot, totals;  
+    //char *prot;
+    //GPtrArray *events;
+
+    g_hash_table_iter_init (&pr_iter, ctables->totals);
+    while (g_hash_table_iter_next (&pr_iter, &prot, &totals))
+    {
+        
+        GHashTableIter event_iter;
+        gpointer event, counts;  
+        
+        printf ("%s %d %d\n", 
+            (char *) prot , ((td_t *)totals)->marg_events, 
+            ((td_t *)totals)->joint_events);
+
+        GHashTable *marg_counts = g_hash_table_lookup (
+            ctables->marginal, (char *) prot);
+        
+        if (marg_counts==NULL) {
+            fprintf (stderr, 
+                "Error finding marginal counts for %s -- skipping.\n", 
+                (char *) prot);
+            continue;
+        }
+
+        GHashTable *joint_counts = g_hash_table_lookup (
+                    ctables->joint, (char *) prot);
+
+        if (joint_counts==NULL) {
+            fprintf (stderr, 
+                "Error finding joint counts for %s -- skipping.\n", 
+                (char *) prot);
+            continue;
+        }
+
+
+        g_hash_table_iter_init (&event_iter, marg_counts);
+        while (g_hash_table_iter_next (&event_iter, &event, &counts)) {
+        
+            printf ("%s %s %d\n", 
+            (char *) prot, (char *) event, 
+            ((cd_t *)counts)->count);
+           
+        }
+
+        g_hash_table_iter_init (&event_iter, joint_counts);
+        while (g_hash_table_iter_next (&event_iter, &event, &counts)) {
+        
+            printf ("%s %s %d\n", 
+            (char *) prot, (char *) event, 
+            ((cd_t *)counts)->count);
+           
+        }
+
+
+    }
+
+
+
 }
