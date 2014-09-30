@@ -3,3 +3,4 @@
 #include <glib.h>
 
 document_t *cu_build_cnlp_docs_memory_full(char *, int);
+document_t *cu_build_cnlp_docs_file(char *);

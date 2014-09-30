@@ -2,7 +2,7 @@
 
 
 static char *PTB_POS_STRINGS[] = { 
-    "", 
+    "0", 
     "CC", 
     "CD", 
     "DT", 
@@ -38,6 +38,11 @@ static char *PTB_POS_STRINGS[] = {
     "WP",
     "WP$",
     "WRB",
+    "-LRB-",
+    "-RRB-",
+    "JJS",
+    "#",
+    "$",
     ".",
     ",",
     "''",
@@ -106,7 +111,254 @@ static char *SU_CC_TYPED_DEPS[] = {
     "prepc_after",
     "prep_against",
     "prep_along",
-    "prep_behind"
+    "prep_behind",
+    "iobj",
+    "npadvmod",
+    "prepc_by",
+    "prep_outside",
+    "prep_during",
+    "prepc_from",
+    "prep_including",
+    "expl",
+    "csubj",
+    "mwe",
+    "quantmod",
+    "prepc_because_of",
+    "prepc_in",
+    "number",
+    "prep_since",
+    "prepc_of",
+    "parataxis",
+    "prep_between",
+    "prep_like",
+    "prepc_while",
+    "prep_without",
+    "prep_toward",
+    "prep_alongside",
+    "acomp",
+    "prep_around",
+    "prep_onto",
+    "prepc_before",
+    "prep_until",
+    "prep_because",
+    "prep_because_of",
+    "prep_among",
+    "predet",
+    "prep_despite",
+    "prep_that",
+    "prep_than",
+    "conj_negcc",
+    "prep_through",
+    "discourse",
+    "prepc_about",
+    "prep_across",
+    "prep_out",
+    "prep_away_from",
+    "prep_inside",
+    "prep_near",
+    "prep_throughout",
+    "prep_down",
+    "prepc_with",
+    "prep_above",
+    "prep_such_as",
+    "csubjpass",
+    "prep_per",
+    "prep_upon",
+    "prepc_despite",
+    "conj_plus",
+    "prep_out_of",
+    "prep_amid",
+    "prepc_at",
+    "prepc_compared_with",
+    "prepc_according_to",
+    "prepc_on",
+    "prep_within",
+    "prepc_without",
+    "prep_atop",
+    "prep_as_of",
+    "prepc_as_of",
+    "prepc_inside",
+    "prepc_close",
+    "prepc_close_to",
+    "prep_before",
+    "prep_ahead_of",
+    "prep_in_addition_to",
+    "prepc_since",
+    "prep_next_to",
+    "prep_whether",
+    "prep_off",
+    "prep_beside",
+    "prep_regarding",
+    "prep_via",
+    "prep_besides",
+    "prep_aboard",
+    "punct",
+    "prepc_until",
+    "prep_except",
+    "prep_along_with",
+    "prep_involving",
+    "conj_and/or",
+    "prepc_between",
+    "prep_close_to",
+    "prep_past",
+    "prep_pending",
+    "prep_outside_of",
+    "prepc_as",
+    "prep_following",
+    "prepc_such_as",
+    "conj",
+    "prep_up",
+    "prepc_than",
+    "prep_in_place_of",
+    "prep_in_front_of",
+    "prep_starting",
+    "prep_due_to",
+    "prepc_as_to",
+    "prepc_over",
+    "prep_beyond",
+    "prep_regardless_of",
+    "prep_inside_of",
+    "prep_prior_to",
+    "prep_next",
+    "prep_thanks_to",
+    "prepc_compared_to",
+    "prep_towards",
+    "prep_on_behalf_of",
+    "prep_off_of",
+    "prep_till",
+    "prepc_across_from",
+    "prep_while",
+    "prepc_through",
+    "prepc_based_on",
+    "prepc_besides",
+    "prepc_out_of",
+    "prep_if",
+    "prep_below",
+    "prep_instead_of",
+    "prep_excluding",
+    "prepc_near",
+    "prepc_toward",
+    "prepc_upon",
+    "conj_just",
+    "prep_de",
+    "prep_across_from",
+    "conj_only",
+    "prepc_below",
+    "prepc_together_with",
+    "prepc_like",
+    "prepc_along_with",
+    "prepc_depending_on",
+    "prep_worth",
+    "prepc_into",
+    "conj_of",
+    "prepc_up",
+    "prep_unlike",
+    "prepc_inside_of",
+    "prepc_amid",
+    "prepc_next_to",
+    "prepc_followed_by",
+    "prep_followed_by",
+    "prepc_instead_of",
+    "prepc_along",
+    "conj_in",
+    "prep_contrary_to",
+    "prep_on_account_of",
+    "prepc_behind",
+    "prepc_away_from",
+    "prepc_throughout",
+    "prep_though",
+    "prepc_following",
+    "prepc_due_to",
+    "prep_together_with",
+    "prepc_except",
+    "prep_far_from",
+    "prep_in_spite_of",
+    "prepc_within",
+    "prepc_during",
+    "prepc_among",
+    "conj_if",
+    "prep_concerning",
+    "prep_on_top_of",
+    "prepc_ahead_of",
+    "prepc_against",
+    "conj_versus",
+    "prepc_beyond",
+    "prep_vs.",
+    "prepc_onto",
+    "conj_yet",
+    "prepc_regardless_of",
+    "conj_vs.",
+    "prep_beneath",
+    "prepc_in_addition_to",
+    "prepc_under",
+    "prep_barring",
+    "prep_based_on",
+    "prep_notwithstanding",
+    "prepc_past",
+    "prepc_apart_from",
+    "prep_although",
+    "prep_as_for",
+    "prepc_out",
+    "prep_apart_from",
+    "prep_except_for",
+    "prepc_pending",
+    "prep_aside_from",
+    "prepc_as_for",
+    "prepc_above",
+    "prep_nearer",
+    "prepc_except_for",
+    "prep_considering",
+    "prep_scouting",
+    "prep_unless",
+    "conj_than",
+    "prepc_around",
+    "conj_minus",
+    "prep_in_case_of",
+    "prepc_regarding",
+    "prepc_near_to",
+    "prep_save",
+    "prepc_prior_to",
+    "prep_thru",
+    "conj_vs",
+    "prepc_towards",
+    "prep_close_by",
+    "prep_amidst",
+    "prepc_'cause",
+    "prepc_in_front_of",
+    "prepc_close_by",
+    "prepc_alongside",
+    "prepc_far_from",
+    "prepc_in_spite_of",
+    "prep_by_means_of",
+    "conj_'n'",
+    "conj_v.",
+    "prepc_across",
+    "prepc_outside_of",
+    "prep_as_to",
+    "prepc_because",
+    "prepc_although",
+    "prep_according",
+    "prep_in_accordance_with",
+    "prep_racing",
+    "prep_beginning",
+    "prepc_off",
+    "prepc_till",
+    "prep_en",
+    "prep_with_respect_to",
+    "conj_+",
+    "prepc_worth",
+    "prep_'til",
+    "prep_irrespective_of",
+    "prep_accross",
+    "prepc_starting",
+    "conj_'n",
+    "prep_underneath",
+    "prepc_with_regard_to",
+    "conj_through",
+    "prep_opposite",
+    "prep_according_to",
+    "prep_throught",
+    "prep_howst",
 };
 
 
@@ -123,6 +375,15 @@ cu_sentence_free(
         }
         free ((*sentence)->tokens);
         (*sentence)->tokens = NULL;
+
+        if ((*sentence)->lemmas != NULL) {
+            for (int i=0; i < (*sentence)->t_len; i++) {
+                free ((*sentence)->lemmas[i]);
+                (*sentence)->lemmas[i] = NULL;
+            }
+            free ((*sentence)->lemmas);
+            (*sentence)->lemmas = NULL;
+        }
 
         if ((*sentence)->pos!=NULL) {
             free ((*sentence)->pos);
@@ -255,8 +516,9 @@ cu_doc_builder_new ()
 
     db->sentences = g_ptr_array_new ();
     db->tokens = NULL; //g_ptr_array_new (); 
+    db->lemmas = NULL;
     db->pos = NULL;//g_array_new (FALSE, FALSE, sizeof(pos_t));
-
+    
 
     db->cur_t_len = 0;
     db->cur_c_len = 0;
@@ -274,6 +536,7 @@ cu_doc_builder_new_sentence(
     cu_doc_builder_finish_sentence (db);
     db->tokens = g_ptr_array_new ();
     db->pos = g_array_new (FALSE, FALSE, sizeof(pos_t));
+    db->lemmas = g_ptr_array_new ();
     db->cur_t_len = 0;
     db->cur_c_len = 0;
 }
@@ -295,8 +558,31 @@ cu_doc_builder_finish_sentence(
         sentence->c_len = db->cur_c_len;
         sentence->deps = db->deps;
 
+        if (db->lemmas->len > 0) {
+            sentence->lemmas = (char **) malloc (sizeof(char *) * db->lemmas->len);
+            if (sentence->lemmas == NULL) {
+                fprintf (stderr, "Could not allocate memory for lemmas.\n");
+                exit(1);
+            }
+            if (db->lemmas->len != sentence->t_len) {
+                fprintf (stderr, "Different numbers of tokens and lemmas found.\n");
+                exit(1);
+            }
+            for (int i=0; i < db->lemmas->len; i++) {
+                sentence->lemmas[i] = (char *) db->lemmas->pdata[i];
+            }
+        }
+
         if (db->pos->len > 0) {
             sentence->pos = (pos_t *) malloc (sizeof(pos_t) * db->pos->len);
+            if (sentence->pos == NULL) {
+                fprintf (stderr, "Could not allocate memory for pos tags.\n");
+                exit(1);
+            }
+            if (db->pos->len != sentence->t_len) {
+                fprintf (stderr, "Different numbers of tokens and POS tags found.\n");
+                exit(1);
+            }
             for (int i=0; i < db->pos->len; i++) {
                 sentence->pos[i] = ((pos_t *) db->pos->data)[i];        
             }
@@ -307,7 +593,9 @@ cu_doc_builder_finish_sentence(
         g_ptr_array_add (db->sentences, sentence);
 
         g_ptr_array_free (db->tokens, TRUE);
+        g_ptr_array_free (db->lemmas, TRUE);
         db->tokens = NULL;
+        db->lemmas = NULL;
         db->deps = NULL;
         g_array_free(db->pos, TRUE);
         db->pos = NULL;
@@ -319,17 +607,21 @@ cu_doc_builder_finish_sentence(
 void
 cu_doc_builder_add_token(
     DBuilder_t *db,
-    char *token,
-    unsigned int len
+    char *token
 ) {
-    char *token_cpy = NULL;
-    token_cpy = (char *) malloc (sizeof(char) * (len + 1));
-    strncpy (token_cpy, token, len);
-    token_cpy[len] = '\0'; 
-    g_ptr_array_add (db->tokens, token_cpy);
+    g_ptr_array_add (db->tokens, token);
     db->cur_t_len++;
-    db->cur_c_len += len + 1;
+    db->cur_c_len += strlen(token) + 1;
 }
+
+void
+cu_doc_builder_add_lemma(
+    DBuilder_t *db,
+    char *lemma
+) {
+    g_ptr_array_add (db->lemmas, lemma);
+}
+
 
 void
 cu_doc_builder_add_pos (
@@ -414,6 +706,14 @@ cu_doc_builder_free(
         g_ptr_array_free ((*db)->tokens, free_seg);
     }
 
+    if ((*db)->lemmas != NULL) {
+        if (free_seg == TRUE) {
+            for (int i=0; i < (*db)->lemmas->len; i ++)
+                free ((*db)->lemmas->pdata[i]);
+        }
+        g_ptr_array_free ((*db)->lemmas, free_seg);
+    }
+
     if ((*db)->sentences != NULL) {
         if (free_seg == TRUE) {
             for (int i=0; i < (*db)->sentences->len; i ++)
@@ -447,9 +747,9 @@ pos_t cu_char_to_pos_t(
     char *pos_token
 ) {
 
-    for (int i=0; i < 44 ; i++) {
+    for (int i=0; i < 48 ; i++) {
         if (strcmp(PTB_POS_STRINGS[i], pos_token)==0) {
-            if (i < 36)
+            if (i < 41)
                 return (pos_t) i;
             else
                 return PTB_PUNC;
@@ -466,7 +766,7 @@ cu_char_to_dep_t(
     char *dep_str
 ) {
 
-    for (int i=0; i < 59; i++) {
+    for (int i=0; i < 306; i++) {
         if (strcmp(SU_CC_TYPED_DEPS[i], dep_str)==0) {
                 return (dep_t) i;
         }
