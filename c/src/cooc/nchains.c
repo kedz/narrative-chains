@@ -16,20 +16,46 @@ int nchain_len_cmp(
 
 }
 
+char *_recover_verb_lemma_prt(
+    sentence_t *s, 
+    int verb_idx
+) {
+
+    if (is_verb (s, verb_idx)) {
+        GString *buffer = g_string_new (s->lemmas[verb_idx]);
+        for (int p=0; p < s->t_len; p++) {
+            if (s->deps[verb_idx+1][p+1]==TD_PRT) {
+                if (p < verb_idx) {
+                    g_string_prepend_c (buffer, ' ');
+                    g_string_prepend (buffer, s->lemmas[p]);
+                } else {
+                    g_string_append_c (buffer, ' ');
+                    g_string_append (buffer, s->lemmas[p]);
+                }
+
+            }
+        }
+        return g_string_free (buffer, FALSE);
+    }
+
+    return NULL;
+}
+
 GPtrArray *cu_extract_nar_chains_simple(
     document_t *doc    
 ) {
 
     GHashTable *nchains = NULL;
     nchains = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
+
     sentence_t *sent = NULL;
     for (int s=0; s < doc->s_len; s++) {
         sent = doc->sentences[s];
         for (int t=0; t < sent->t_len; t++) {
-            if (is_verb (sent, t)) {         
+            char *verb = NULL;
+            if ((verb=_recover_verb_lemma_prt (sent, t))!=NULL) {
                 for (int n=0; n < sent->t_len; n++) {
                     if (sent->deps[t+1][n+1]>0 && is_noun (sent, n)) {
-                        CU_NEWSTRCPY(verb, sent->tokens[t])
                         GPtrArray *verbs = 
                             (GPtrArray * ) g_hash_table_lookup (
                                 nchains, sent->tokens[n]);
@@ -37,15 +63,16 @@ GPtrArray *cu_extract_nar_chains_simple(
                             verbs = g_ptr_array_new();    
                             CU_NEWSTRCPY(prot, sent->tokens[n])
                             g_hash_table_insert (nchains, prot, verbs); 
-                        } 
-                        g_ptr_array_add (verbs, verb);
+                        }
+                        CU_NEWSTRCPY(verb_cpy, verb) 
+                        g_ptr_array_add (verbs, verb_cpy);
                     }
                 }
+                free (verb);
+                verb = NULL;
             }
         }
     }
-    
-
     GPtrArray *nchains_arr = g_ptr_array_sized_new (
         g_hash_table_size (nchains));
 
