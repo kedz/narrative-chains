@@ -253,14 +253,10 @@ cu_build_cnlp_docs_memory_full(
     char *buffer,
     int size
 ) {
-    printf ("HERE1\n");
     cnlp_xml_dbuilder_t xdb = {NULL, NULL, 0, 0, 0};
-    printf ("HERE2\n");
     cnlp_xmlp_state_s state = 
         {&xdb, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE};
-    printf ("HERE3\n");
     xmlSAXUserParseMemory(&corenlp_xml_parser, &state, buffer, size);
-    printf ("HERE4\n");
     
     //char str* = cu_document_as_string (
     return xdb.doc;

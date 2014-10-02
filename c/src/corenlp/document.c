@@ -771,10 +771,10 @@ cu_char_to_dep_t(
                 return (dep_t) i;
         }
     }
-
     
-    printf ("%s not a SU dependency!\n", dep_str);
-    exit(1);
+    return (dep_t) 306;
+    //printf ("%s not a SU dependency!\n", dep_str);
+    //exit(1);
 
 
 }

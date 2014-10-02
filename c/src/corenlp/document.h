@@ -314,6 +314,7 @@ typedef enum dep_t {
     TD_PREP_ACCORDING_TO=303,
     TD_PREP_THROUGHT=304,
     TD_PREP_HOWST=305,
+    TD_UNK=306,
 } dep_t;
 
 typedef enum pos_t { PTB_NONE=0, 

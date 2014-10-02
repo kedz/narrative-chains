@@ -141,27 +141,32 @@ process_file(
     fclose(fp);
 
     char *content_type =
-        g_content_type_guess (path, NULL, 0, &is_uncertain);
+        g_content_type_guess (path, header, read, &is_uncertain);
 
     if (content_type != NULL) {
 
         char *mime_type = g_content_type_get_mime_type (content_type);
+           printf ("Content type of %s\n", path);
 
         if (strcmp(mime_type, "application/xml")==0) {
             if (options->_xml_file_handler != NULL) {
                 CU_NEWSTRCPY(path_cpy, path)
                 (options->_xml_file_handler) (path_cpy, options->data);
             }
-//        } else if (strcmp(mime_type, "application/x-gzip")==0) {
-//            //if (options->_x_gzip_file_handler != NULL) {
-//            //    (options->_x_gzip_file_handler) (path, options->data);
-//            //}
-//        } else if (strcmp(mime_type, "application/x-compressed-tar")==0) {
-//            //if (options->_x_gzip_file_handler != NULL) {
-//            //    (options->_x_gzip_file_handler) (path, options->data);
-//            //}
+        } else if (strcmp(mime_type, "application/x-gzip")==0) {
+            if (options->_x_gzip_file_handler != NULL) {
+           printf ("Here\n");
+ 
+                CU_NEWSTRCPY(path_cpy, path)
+                (options->_x_gzip_file_handler) (path_cpy, options->data);
+            }
+        } else if (strcmp(mime_type, "application/x-compressed-tar")==0) {
+            if (options->_x_gzip_file_handler != NULL) {
+                CU_NEWSTRCPY(path_cpy, path)
+                (options->_x_gzip_file_handler) (path_cpy, options->data);
+            }
         }
-//
+
         g_free (mime_type);
         g_free (content_type);
         free (path);
@@ -173,6 +178,8 @@ process_file(
         return 1;
     }
 }
+
+
 
 
 int main(int argc, char **argv) {

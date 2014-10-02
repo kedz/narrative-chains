@@ -1,6 +1,7 @@
 #include "corenlp/document.h"
 #include <math.h>
 #include <glib.h>
+#include <zlib.h>
 #include "util.h"
 
 typedef struct nchain_untyped_s {

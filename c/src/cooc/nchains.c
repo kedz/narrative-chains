@@ -22,6 +22,11 @@ char *_recover_verb_lemma_prt(
 ) {
 
     if (is_verb (s, verb_idx)) {
+        
+        if (strcmp(s->lemmas[verb_idx], "be")==0)
+            return NULL; 
+        if (strcmp(s->lemmas[verb_idx], "have")==0)
+            return NULL; 
         GString *buffer = g_string_new (s->lemmas[verb_idx]);
         for (int p=0; p < s->t_len; p++) {
             if (s->deps[verb_idx+1][p+1]==TD_PRT) {
@@ -41,6 +46,20 @@ char *_recover_verb_lemma_prt(
     return NULL;
 }
 
+GPtrArray *_recover_nn(
+    sentence_t *s,
+    int noun_idx
+) {
+    GPtrArray *nouns = g_ptr_array_new ();
+    for (int n=0; n < s->t_len; n++) {
+        if (s->deps[noun_idx+1][n+1]>0 && is_noun (s, n)) {
+            CU_NEWSTRCPY(nn, s->lemmas[n])
+            g_ptr_array_add (nouns, nn);    
+        }
+    }
+    return nouns;
+}
+
 GPtrArray *cu_extract_nar_chains_simple(
     document_t *doc    
 ) {
@@ -55,17 +74,31 @@ GPtrArray *cu_extract_nar_chains_simple(
             char *verb = NULL;
             if ((verb=_recover_verb_lemma_prt (sent, t))!=NULL) {
                 for (int n=0; n < sent->t_len; n++) {
+                     
                     if (sent->deps[t+1][n+1]>0 && is_noun (sent, n)) {
-                        GPtrArray *verbs = 
-                            (GPtrArray * ) g_hash_table_lookup (
-                                nchains, sent->tokens[n]);
-                        if (verbs==NULL) {
-                            verbs = g_ptr_array_new();    
-                            CU_NEWSTRCPY(prot, sent->tokens[n])
-                            g_hash_table_insert (nchains, prot, verbs); 
+                         
+
+                        GPtrArray *nouns = _recover_nn (sent, n);
+                        CU_NEWSTRCPY(noun, sent->lemmas[n]);
+                        g_ptr_array_add (nouns, noun);
+                        for (int nn=0; nn < nouns->len; nn++) {
+                            char *prot = (char *) nouns->pdata[nn];
+                            GPtrArray *verbs = 
+                                (GPtrArray * ) g_hash_table_lookup (
+                                    nchains, prot);
+                            if (verbs==NULL) {
+                                verbs = g_ptr_array_new();    
+                                g_hash_table_insert (nchains, prot, verbs); 
+                                CU_NEWSTRCPY(verb_cpy, verb) 
+                                g_ptr_array_add (verbs, verb_cpy);    
+                            } else {
+                                CU_NEWSTRCPY(verb_cpy, verb) 
+                                g_ptr_array_add (verbs, verb_cpy);    
+                                free (prot);
+                            }
+                        
                         }
-                        CU_NEWSTRCPY(verb_cpy, verb) 
-                        g_ptr_array_add (verbs, verb_cpy);
+                        g_ptr_array_free (nouns, TRUE);
                     }
                 }
                 free (verb);
@@ -144,9 +177,9 @@ char *_joint_key(char *a, char *b) {
     char *key = NULL;
     int cmp = strcmp(a, b);
     if (cmp < 0) 
-        asprintf (&key, "%s %s", a, b);
+        asprintf (&key, "%s\t%s", a, b);
     else 
-        asprintf (&key, "%s %s", b, a);
+        asprintf (&key, "%s\t%s", b, a);
     return key;
 }
 
@@ -327,6 +360,9 @@ void cu_nc_count_table_dump(
     nevent_counts_t *ctables
 ) {
 
+
+    gzFile counts_file;
+    counts_file = gzopen ("test_counts.gz", "w");
     GHashTableIter pr_iter;
     gpointer prot, totals;  
     //char *prot;
@@ -335,10 +371,14 @@ void cu_nc_count_table_dump(
     g_hash_table_iter_init (&pr_iter, ctables->totals);
     while (g_hash_table_iter_next (&pr_iter, &prot, &totals))
     {
-        
+       
+      
+         
         GHashTableIter event_iter;
         gpointer event, counts;  
-        
+        gzprintf (counts_file, "%s\t%d\t%d\n", 
+            (char *) prot , ((td_t *)totals)->marg_events, 
+            ((td_t *)totals)->joint_events); 
         printf ("%s %d %d\n", 
             (char *) prot , ((td_t *)totals)->marg_events, 
             ((td_t *)totals)->joint_events);
@@ -367,6 +407,10 @@ void cu_nc_count_table_dump(
         g_hash_table_iter_init (&event_iter, marg_counts);
         while (g_hash_table_iter_next (&event_iter, &event, &counts)) {
         
+            gzprintf (counts_file, "%s\t%s\t%d\n", 
+                (char *) prot, (char *) event, 
+                ((cd_t *)counts)->count);
+
             printf ("%s %s %d\n", 
             (char *) prot, (char *) event, 
             ((cd_t *)counts)->count);
@@ -376,15 +420,20 @@ void cu_nc_count_table_dump(
         g_hash_table_iter_init (&event_iter, joint_counts);
         while (g_hash_table_iter_next (&event_iter, &event, &counts)) {
         
+            gzprintf (counts_file, "%s\t%s\t%d\n", 
+            (char *) prot, (char *) event, 
+            ((cd_t *)counts)->count);
+
             printf ("%s %s %d\n", 
             (char *) prot, (char *) event, 
             ((cd_t *)counts)->count);
            
         }
+        gzprintf (counts_file, "\n");
 
 
     }
 
-
+    gzclose (counts_file);
 
 }
