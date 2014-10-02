@@ -72,6 +72,19 @@ class NarChainCounts:
             
             yield prot, event, neg_event
 
+    def init_weights(self, d):
+        idx = 0
+        word2idx = {}
+        for event in self.events:
+            word2idx[event] = idx
+            idx += 1
+        for prot in self.prot_marg_counts.iterkeys():
+            word2idx[prot] = idx
+            idx += 1
+
+        return np.zeros((idx, d)), word2idx
+            
+
 def read_nar_chain_counts(filename):
 
     prot_marg_total = {}

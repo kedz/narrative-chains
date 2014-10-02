@@ -18,6 +18,8 @@ def main(path):
 
     total_updates = 0
 
+    W, word2row = nc.init_weights(100)
+
     start = time.time()
     for num_iter in range(10):
         for prot, event, neg_event in nc.sample_seq_iter():
