@@ -14,21 +14,22 @@ void _nc_xml_file_handler(
     document_t *doc = NULL;
     doc = cu_build_cnlp_docs_file (path);
 
-    printf ("Extracting doc %s\n", path); 
+        
+    if (doc!=NULL) {
+        printf ("Extracting doc %s\n", path); 
+        GPtrArray *nchains = cu_extract_nar_chains_simple (doc);
+        cu_count_untyped_nchains (
+            ncc_data->ctables, (nchain_untyped_t **) nchains->pdata, nchains->len);
 
+        for (int c=0; c < nchains->len; c++) {
+            nchain_untyped_t *nchain =
+                (nchain_untyped_t *) g_ptr_array_index (nchains, c);
+            cu_untyped_nchain_free (&nchain);
+        }
+        g_ptr_array_free (nchains, TRUE);
 
-    GPtrArray *nchains = cu_extract_nar_chains_simple (doc);
-    cu_count_untyped_nchains (
-        ncc_data->ctables, (nchain_untyped_t **) nchains->pdata, nchains->len);
-
-    for (int c=0; c < nchains->len; c++) {
-        nchain_untyped_t *nchain =
-            (nchain_untyped_t *) g_ptr_array_index (nchains, c);
-        cu_untyped_nchain_free (&nchain);
+        cu_document_free (&doc, TRUE);
     }
-    g_ptr_array_free (nchains, TRUE);
-
-    cu_document_free (&doc, TRUE);
     free (path);
 
 } 
@@ -127,20 +128,21 @@ _nc_tar_file_handler(
        
         document_t *doc = NULL; 
         doc = cu_build_cnlp_docs_memory_full (file_buffer, size);
-        GPtrArray *nchains = cu_extract_nar_chains_simple (doc);
-        cu_count_untyped_nchains (
-            ncc_data->ctables, (nchain_untyped_t **) nchains->pdata, 
-            nchains->len);
+        if (doc!=NULL) {
+            GPtrArray *nchains = cu_extract_nar_chains_simple (doc);
+            cu_count_untyped_nchains (
+                ncc_data->ctables, (nchain_untyped_t **) nchains->pdata, 
+                nchains->len);
 
-        cu_document_free (&doc, TRUE);
-    
-        for (int c=0; c < nchains->len; c++) {
-            nchain_untyped_t *nchain =
-                (nchain_untyped_t *) g_ptr_array_index (nchains, c);
-            cu_untyped_nchain_free (&nchain);
+            cu_document_free (&doc, TRUE);
+        
+            for (int c=0; c < nchains->len; c++) {
+                nchain_untyped_t *nchain =
+                    (nchain_untyped_t *) g_ptr_array_index (nchains, c);
+                cu_untyped_nchain_free (&nchain);
+            }
+            g_ptr_array_free (nchains, TRUE);
         }
-        g_ptr_array_free (nchains, TRUE);
-
         free(file_buffer);
         gzseek (fp, pad, SEEK_CUR);
 
