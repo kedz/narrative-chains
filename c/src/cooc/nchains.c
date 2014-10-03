@@ -379,9 +379,6 @@ void cu_nc_count_table_dump(
         gzprintf (counts_file, "%s\t%d\t%d\n", 
             (char *) prot , ((td_t *)totals)->marg_events, 
             ((td_t *)totals)->joint_events); 
-        printf ("%s %d %d\n", 
-            (char *) prot , ((td_t *)totals)->marg_events, 
-            ((td_t *)totals)->joint_events);
 
         GHashTable *marg_counts = g_hash_table_lookup (
             ctables->marginal, (char *) prot);
@@ -411,9 +408,6 @@ void cu_nc_count_table_dump(
                 (char *) prot, (char *) event, 
                 ((cd_t *)counts)->count);
 
-            printf ("%s %s %d\n", 
-            (char *) prot, (char *) event, 
-            ((cd_t *)counts)->count);
            
         }
 
@@ -424,9 +418,6 @@ void cu_nc_count_table_dump(
             (char *) prot, (char *) event, 
             ((cd_t *)counts)->count);
 
-            printf ("%s %s %d\n", 
-            (char *) prot, (char *) event, 
-            ((cd_t *)counts)->count);
            
         }
         gzprintf (counts_file, "\n");
