@@ -5,6 +5,7 @@ import wordcooc
 import time
 import sys
 from sklearn.metrics.pairwise import cosine_similarity
+import signal
 
 def main(pair_file, dict_file):
 
@@ -58,6 +59,11 @@ def main(pair_file, dict_file):
     start = time.time()
     alert_start = time.time()
 
+    def signal_handler(signal, frame):
+            print('Writing...')
+            np.savetxt("weights.gz", W.get_value())
+    signal.signal(signal.SIGINT, signal_handler)
+
     num_batches = 0
     for num_iter in range(100):
         #print "iter", num_iter
@@ -72,12 +78,13 @@ def main(pair_file, dict_file):
             total_updates += this_bsize
             avg_loss = bloss / float(this_bsize)
             now = time.time()
-            if now - alert_start > 10:
+            if now - alert_start > 60:
                 up_per_sec = total_updates / float(now-start)
                 print "{:0.5f} samples per sec".format(up_per_sec)
                 print "Batchsize: {} / Batchloss: {}".format(this_bsize, avg_loss)
                 alert_start = now
-    
+                
+                
         np.savetxt("weights.gz", W.get_value())
 
     stop = time.time()
