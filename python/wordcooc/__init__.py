@@ -146,6 +146,7 @@ class ProtEventSample(object):
         II_neg = np.zeros((batchsize, self.v_size))
         random.shuffle(self._pe_pairs)
         random.shuffle(self._events)
+        indices = set()
 
         batch_idx = 0
         neg_event_idx = 0
@@ -164,17 +165,23 @@ class ProtEventSample(object):
                 if neg_event not in self._p2e[prot]:
                     break
             p = self._p2idx[prot]
+            u = self._e2idx[event]
+            v = self._e2idx[neg_event]
             II_pos[batch_idx,p] = 1
-            II_pos[batch_idx,self._e2idx[event]] = 1
+            II_pos[batch_idx,u] = 1
             II_neg[batch_idx,p] = 1
-            II_neg[batch_idx,self._e2idx[neg_event]] = 1
-            
+            II_neg[batch_idx,v] = 1
+            indices.add(p)
+            indices.add(u)
+            indices.add(v)
             batch_idx += 1
             if batch_idx >= batchsize:
-                yield II_pos, II_neg
+                
+                yield II_pos, II_neg, sorted(list(indices))
                 II_pos.fill(0)
                 II_neg.fill(0)
                 batch_idx = 0
+                indices = set()
         if batch_idx > 0:
             yield II_pos[0:batch_idx,:], II_neg[0:batch_idx,:]
 

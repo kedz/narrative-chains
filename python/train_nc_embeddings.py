@@ -39,6 +39,7 @@ def main(pair_file, dict_file):
 
     u = T.matrix('u', dtype='float64')
     v = T.matrix('v', dtype='float64')
+    i = T.vector('i', dtype='int64')
 
     W = theano.shared(W_py, name='W')
 
@@ -47,8 +48,8 @@ def main(pair_file, dict_file):
 
     learning_rate = 1
     g_W = T.grad(cost=hinge_loss, wrt=W)
-    updates = [(W, W - learning_rate * g_W)]
-    learn = theano.function(inputs=[u, v],
+    updates = [(W, T.set_subtensor(W[i], W[i] - learning_rate * g_W[i]))]
+    learn = theano.function(inputs=[u, v, i],
                             outputs=hinge_loss,
                             updates=updates)        
                        # //givens={p: p_real, u: u_real, v: v_real})
@@ -70,10 +71,9 @@ def main(pair_file, dict_file):
         print "Iter", num_iter 
             
 
-        for P, N in sampler.batch_sample_seq_iter(batchsize):
+        for P, N, II in sampler.batch_sample_seq_iter(batchsize):
             num_batches += 1
-                
-            bloss = learn(P, N)
+            bloss = learn(P, N, II)
             this_bsize = P.shape[0]
             total_updates += this_bsize
             avg_loss = bloss / float(this_bsize)
