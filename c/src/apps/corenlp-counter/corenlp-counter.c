@@ -146,7 +146,7 @@ process_file(
     if (content_type != NULL) {
 
         char *mime_type = g_content_type_get_mime_type (content_type);
-           printf ("Content type of %s\n", path);
+           printf ("Content type of %s\n", mime_type);
 
         if (strcmp(mime_type, "application/xml")==0) {
             if (options->_xml_file_handler != NULL) {
@@ -155,7 +155,6 @@ process_file(
             }
         } else if (strcmp(mime_type, "application/x-gzip")==0) {
             if (options->_x_gzip_file_handler != NULL) {
-           printf ("Here\n");
  
                 CU_NEWSTRCPY(path_cpy, path)
                 (options->_x_gzip_file_handler) (path_cpy, options->data);
@@ -165,8 +164,12 @@ process_file(
                 CU_NEWSTRCPY(path_cpy, path)
                 (options->_x_gzip_file_handler) (path_cpy, options->data);
             }
+        } else {
+
+            fprintf (stderr, "Could not figure out filetype\n");
         }
 
+        
         g_free (mime_type);
         g_free (content_type);
         free (path);
@@ -187,7 +190,8 @@ int main(int argc, char **argv) {
     GPtrArray *pathlist;
     gboolean recurse = FALSE;
     gboolean verbose = FALSE;
-
+    
+    char *mode = NULL;
     //cnt_mode_t mode = STATS;
 
     if (argc == 1) {
@@ -202,14 +206,32 @@ int main(int argc, char **argv) {
                 recurse = TRUE;
             } else if (strcmp(argv[i], "-v")==0) {
                 verbose = TRUE;
+            } else if (strcmp(argv[i], "-m")==0) {
+                if (++i < argc) 
+                    mode = argv[i];
             } else {
                 g_ptr_array_add (pathlist, (gpointer) argv[i]);
             }
         }
     }
 
-    
-    opt_s * options = nc_options_new();
+    opt_s *options = NULL;
+
+    if (mode==NULL) {
+        usage();
+        exit(1);
+    } else if (strcmp(mode, "chambers")==0) {        
+        options = cu_corenlp_counter_chambers_options_new();
+        if (verbose)
+            printf ("Producing Chambers-style narrative chain counts...\n");
+    //} else if (strcmp(mode, "?")==0) {
+    //opt_s * options = nc_options_new();
+        
+    } else {
+        printf ("%s is not a valid mode.\n");
+        exit(1);
+    }
+    printf ("Mode is %s\n", mode); 
 //    if (mode == STATS) {
 //        g_print("Making struct\n");
 //        options->data = new_stats_data();
@@ -239,7 +261,7 @@ int main(int argc, char **argv) {
     if (options->_free != NULL)
         (options->_free) (options->data);
 
-    free (options->data);
+    //free (options->data);
     free (options);
 
     if (num_errors > 0) {

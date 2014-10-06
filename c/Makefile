@@ -13,24 +13,18 @@ all: tests apps python
 
 python: python_build/nchain.so 
 
-
-
-#	$(CC) $(CFLAGS) -fPIC -c $(SRC)/python/nchain.py.c -o $(OBJ)/python/nchain.py.o $(LDLIBS)
-#	$(CC) -shared $(CFLAGS) $(OBJ)/python/nchain.py.o -o python_build/nchain.so $(LDLIBS)
-
-
-#gcc -DNDEBUG -g -O3 -Wall -Wstrict-prototypes -fPIC -DMAJOR_VERSION=1 -DMINOR_VERSION=0 -I/usr/local/include -I/usr/local/include/python2.2 -c demo.c -o build/temp.linux-i686-2.2/demo.o
-
-
-#gcc -shared build/temp.linux-i686-2.2/demo.o -L/usr/local/lib -ltcl83 -o build/lib.linux-i686-2.2/demo.so
 apps: $(BIN)/corenlp-counter 
 
-$(BIN)/corenlp-counter: $(OBJ)/corenlp/document.o $(OBJ)/corenlp/xmlparser.o $(OBJ)/apps/corenlp-counter/nc_counter.o $(OBJ)/cooc/nchains.o
-	$(CC) $(CFLAGS) $(OBJ)/corenlp/document.o $(OBJ)/corenlp/xmlparser.o $(OBJ)/cooc/nchains.o $(SRC)/apps/corenlp-counter/corenlp-counter.c $(SRC)/apps/corenlp-counter/nc_counter.c -o $(BIN)/corenlp-counter $(LDLIBS)
+$(BIN)/corenlp-counter: $(OBJ)/corenlp/document.o $(OBJ)/corenlp/xmlparser.o $(OBJ)/apps/corenlp-counter/nc_counter.o $(OBJ)/cooc/nchains.o $(OBJ)/apps/corenlp-counter/chambers-nc-counts.o
+	$(CC) $(CFLAGS) $(OBJ)/corenlp/document.o $(OBJ)/corenlp/xmlparser.o $(OBJ)/cooc/nchains.o $(OBJ)/apps/corenlp-counter/chambers-nc-counts.o $(SRC)/apps/corenlp-counter/corenlp-counter.c $(SRC)/apps/corenlp-counter/nc_counter.c -o $(BIN)/corenlp-counter $(LDLIBS)
+
+$(OBJ)/apps/corenlp-counter/nc_counter.o:
+	$(CC) $(CFLAGS) -c $(SRC)/apps/corenlp-counter/nc_counter.c -o $(OBJ)/apps/corenlp-counter/nc_counter.o $(LDLIBS)	
 
 
-#$(OBJ)/apps/corenlp-counter/nc_counter.o:
-#	$(CC) $(CFLAGS) -c $(SRC)/apps/corenlp-counter/nc_counter.c -o $(OBJ)/apps/corenlp-counter/nc_counter.o $(LDLIBS)	
+$(OBJ)/apps/corenlp-counter/chambers-nc-counts.o:
+	$(CC) $(CFLAGS) -c $(SRC)/apps/corenlp-counter/chambers-nc-counts.c -o $(OBJ)/apps/corenlp-counter/chambers-nc-counts.o $(LDLIBS)	
+
 
 tests: tests/bin/corenlp-document-tests tests/bin/corenlp-xmlparser-tests tests/bin/cooc-nchains-tests
 
@@ -62,4 +56,4 @@ $(OBJ)/cooc/nchains.o:
 	$(CC) $(CFLAGS) -c $(SRC)/cooc/nchains.c -o $(OBJ)/cooc/nchains.o
 
 clean:
-	rm -f $(OBJ)/*/*.o tests/obj/*.o tests/bin/* bin/* 
+	rm -f $(OBJ)/apps/corenlp-counter/*.o $(OBJ)/cooc/*.o $(OBJ)/corenlp/*.o $(OBJ)/*/*/*.o tests/obj/*.o tests/bin/* bin/* 

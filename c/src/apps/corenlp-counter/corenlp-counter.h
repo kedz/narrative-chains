@@ -6,6 +6,7 @@
 #include <string.h>
 #include "util.h"
 #include "apps/corenlp-counter/nc_counter.h"
+#include "apps/corenlp-counter/chambers-nc-counts.h"
 #include "apps/corenlp-counter/options.h"
 
 

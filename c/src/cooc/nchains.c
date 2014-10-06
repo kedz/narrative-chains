@@ -1,5 +1,15 @@
 #include "cooc/nchains.h"
 
+char *_joint_key(char *a, char *b) {
+
+    char *key = NULL;
+    int cmp = strcmp(a, b);
+    if (cmp < 0) 
+        asprintf (&key, "%s\t%s", a, b);
+    else 
+        asprintf (&key, "%s\t%s", b, a);
+    return key;
+}
 
 int nchain_len_cmp(
     const gpointer a,
@@ -60,12 +70,87 @@ GPtrArray *_recover_nn(
     return nouns;
 }
 
+
+void cu_nc_prot_model_count(
+    nevent_counts_t* counts,
+    document_t *doc
+) {
+
+//    GPtrArray *verbs = g_ptr_array_new ();
+//    GPtrArray *noun_sets = g_ptr_array_new ();
+//    sentence_t *sent = NULL;
+//    for (int s=0; s < doc->s_len; s++) {
+//        sent = doc->sentences[s];
+//        for (int t=0; t < sent->t_len; t++) {
+//            char *verb = NULL;
+//            if ((verb=_recover_verb_lemma_prt (sent, t))!=NULL) {
+//                g_ptr_array_add (verbs, verb);
+//                for (int n=0; n < sent->t_len; n++) {
+//                    if (sent->deps[t+1][n+1]>0 && is_noun (sent, n)) {
+//                        GHashTable *noun_set = g_hash_table_new_full (
+//                            g_str_hash, g_str_equal, free, NULL); 
+//                        GPtrArray *nouns = _recover_nn (sent, n);
+//                        for (int nn=0; nn < nouns->len; nn++) {
+//                            g_hash_table_add (noun_set, nouns->pdata[nn]);    
+//                        }
+//                        CU_NEWSTRCPY(noun, sent->lemmas[n]);
+//                        g_hash_table_add (noun_set, noun);
+//                        g_ptr_array_free (nouns, TRUE);
+//                        g_ptr_array_add (noun_sets, noun_set);
+//                    }                    
+//                }
+//            }
+//        }
+//    }
+
+    GPtrArray *nchains = cu_extract_nar_chains_simple (doc);
+    if (nchains->len > 0) {
+        nchain_untyped_t *chain = (nchain_untyped_t *) nchains->pdata[0]; 
+        for (int e1=0; e1 < chain->num_events; e1++) {
+            counts->marginal_total++;
+            char *event1 = chain->events[e1];
+            cd_t *cdata = g_hash_table_lookup (counts->marginal, event1);
+            if (cdata==NULL) {
+                cdata = (cd_t *) malloc (sizeof(cd_t));
+                cdata->count = 1;
+                CU_NEWSTRCPY(event, event1)
+                g_hash_table_insert (counts->marginal, event, cdata);
+            } else {
+                cdata->count++;
+            }
+            for (int e2=e1+1; e2 < chain->num_events; e2++) {
+                counts->joint_total++;
+                char *event2 = chain->events[e2];
+                char *key = _joint_key(event1, event2);       
+                cd_t *jdata = g_hash_table_lookup (counts->joint, key);
+                if (jdata==NULL) {
+                    jdata = (cd_t *) malloc (sizeof(cd_t));
+                    jdata->count = 1;
+                    g_hash_table_insert (counts->joint, key, jdata);
+                } else {
+                    jdata->count++;
+                    free (key);
+                }
+                         
+            }
+
+        }
+
+    }
+
+    for (int c=0; c < nchains->len; c++) {
+        cu_untyped_nchain_free (&nchains->pdata[c]);
+    }
+    g_ptr_array_free (nchains, TRUE);
+}
+
 GPtrArray *cu_extract_nar_chains_simple(
     document_t *doc    
 ) {
 
     GHashTable *nchains = NULL;
     nchains = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
+     
 
     sentence_t *sent = NULL;
     for (int s=0; s < doc->s_len; s++) {
@@ -74,7 +159,6 @@ GPtrArray *cu_extract_nar_chains_simple(
             char *verb = NULL;
             if ((verb=_recover_verb_lemma_prt (sent, t))!=NULL) {
                 for (int n=0; n < sent->t_len; n++) {
-                     
                     if (sent->deps[t+1][n+1]>0 && is_noun (sent, n)) {
                          
 
@@ -147,9 +231,25 @@ nevent_counts_t *cu_nc_count_table_new()
         g_str_hash, g_str_equal, free, (GDestroyNotify) g_hash_table_destroy);
     nc_table->totals = g_hash_table_new_full (
         g_str_hash, g_str_equal, free, free);
+    nc_table->marginal_total = 0;
+    nc_table->joint_total = 0;
+
     return nc_table;
 }
 
+chambers_nc_counts_t *cu_chambers_nc_counts_new()
+{
+    chambers_nc_counts_t *counts = NULL;
+    counts = (chambers_nc_counts_t *) malloc (sizeof(chambers_nc_counts_t));
+    counts->joint = g_hash_table_new_full (
+        g_str_hash, g_str_equal, free, free);
+    counts->marginal = g_hash_table_new_full (
+        g_str_hash, g_str_equal, free, free);
+    counts->joint_total = 0;
+    counts->marginal_total = 0;
+
+    return counts;
+}
 
 void cu_count_untyped_nchains(
         nevent_counts_t *ctable,
@@ -161,27 +261,9 @@ void cu_count_untyped_nchains(
 }
 
 
-typedef struct count_data_s {
-    unsigned int count;
-} cd_t;
-
-typedef struct tot_data_s {
-    unsigned int marg_events;
-    unsigned int joint_events;
-} td_t;
 
 
 
-char *_joint_key(char *a, char *b) {
-
-    char *key = NULL;
-    int cmp = strcmp(a, b);
-    if (cmp < 0) 
-        asprintf (&key, "%s\t%s", a, b);
-    else 
-        asprintf (&key, "%s\t%s", b, a);
-    return key;
-}
 
 void cu_count_untyped_nchain(
     nevent_counts_t *ctable,
@@ -353,6 +435,51 @@ void cu_nc_count_table_free(
 
     free ((*ctables));
     *ctables = NULL;
+
+}
+
+void cu_chambers_nc_counts_free(
+    chambers_nc_counts_t ** counts
+) {
+
+    g_hash_table_destroy ((*counts)->joint);
+    g_hash_table_destroy ((*counts)->marginal);
+
+    free ((*counts));
+    *counts = NULL;
+
+}
+
+void cu_chambers_nc_counts_dump(
+    chambers_nc_counts_t *counts
+) {
+
+    gzFile f;
+    f = gzopen("nc-protagonist-counts.gz", "w");
+    GHashTableIter iter;
+    gpointer event, event_count;  
+    //char *prot;
+    //GPtrArray *events;
+
+    g_hash_table_iter_init (&iter, counts->marginal);
+    while (g_hash_table_iter_next (&iter, &event, &event_count))
+    {
+         
+        gzprintf (f, "%s\t%d\n", (char *) event, 
+            ((cd_t *)event_count)->count);
+   
+    }
+
+    g_hash_table_iter_init (&iter, counts->joint);
+    while (g_hash_table_iter_next (&iter, &event, &event_count))
+    {
+         
+        gzprintf (f, "%s\t%d\n", (char *) event, 
+            ((cd_t *)event_count)->count);
+   
+    } 
+
+    gzclose(f);
 
 }
 

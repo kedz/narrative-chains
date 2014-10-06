@@ -1,3 +1,6 @@
+#ifndef CU_COOC_NCHAINS_H 
+#define CU_COOC_NCHAINS_H 
+
 #include "corenlp/document.h"
 #include <math.h>
 #include <glib.h>
@@ -10,11 +13,37 @@ typedef struct nchain_untyped_s {
     int num_events;
 } nchain_untyped_t;
 
+typedef struct chambers_nc_counts_t {
+    GHashTable *joint;
+    GHashTable *marginal;
+
+    unsigned int marginal_total;
+    unsigned int joint_total;
+} chambers_nc_counts_t;
+
+
 typedef struct nevent_counts_s {
     GHashTable *joint;
     GHashTable *marginal;
+
+    unsigned int marginal_total;
+    unsigned int joint_total;
     GHashTable *totals;
 } nevent_counts_t;
+
+typedef struct count_data_s {
+    unsigned int count;
+} cd_t;
+
+typedef struct tot_data_s {
+    unsigned int marg_events;
+    unsigned int joint_events;
+} td_t;
+
+
+chambers_nc_counts_t *cu_chambers_nc_counts_new();
+void cu_chambers_nc_counts_free(chambers_nc_counts_t **);
+void cu_chambers_nc_counts_dump (chambers_nc_counts_t *);
 
 void cu_untyped_nchain_free(nchain_untyped_t **);
 void cu_nc_count_table_free (nevent_counts_t **);
@@ -30,3 +59,5 @@ void cu_nc_count_table_dump (nevent_counts_t *ctables);
 unsigned int cu_ut_nchain_marg_count(nevent_counts_t *, char *, char *);
 unsigned int cu_ut_nchain_joint_count(
     nevent_counts_t *, char *, char *, char *);
+
+#endif
