@@ -4,12 +4,19 @@ import wordcooc.chambers
 import wordcooc.timer as timer
 
 
+import sys
+
+if len(sys.argv) != 2:
+    sys.exit()
+
+path = sys.argv[1]
+
 dims = 500
 max_iters = 100
 learning_rate = 0.1
 
 
-path = u'/home/kedz/projects/narrative-chains/narrative-chains/python/nc-protagonist-counts-small.gz'
+#path = u'/home/kedz/projects/narrative-chains/narrative-chains/python/nc-protagonist-counts-small.gz'
 #path = u'/home/kedz/projects/narrative-chains/narrative-chains/python/nc-protagonist-counts.gz'
 
 sampler = timer.timed_function(
@@ -43,7 +50,7 @@ print "Training narrative chains (protagonist) model verb embeddings",
 print "for {} iterations".format(max_iters)
 
 t.start()
-t.set_timer(10)
+t.set_timer(1800)
 for num_iter in range(max_iters):
     
     print "Iteration #{}\t (elapsed time: {})".format(
