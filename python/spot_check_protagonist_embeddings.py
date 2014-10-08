@@ -23,10 +23,14 @@ with gzip.open(dict_path, u'r') as f:
         i2e[idx] = event
 
 
-
+import random
 while 1:
 
-    for idx, event in i2e.iteritems():
+    
+    items = i2e.items()
+    random.shuffle(items)
+    for idx, event in items:
+        
         if W is None:
             W = np.loadtxt(weight_matrix_path)
             D = scipy.spatial.distance.pdist(W, u'cosine')
