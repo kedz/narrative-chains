@@ -4,8 +4,8 @@ import wordcooc.chambers
 import wordcooc.timer as timer
 
 
-dims = 50
-max_iters = 2
+dims = 500
+max_iters = 100
 learning_rate = 0.1
 
 
@@ -43,6 +43,7 @@ print "Training narrative chains (protagonist) model verb embeddings",
 print "for {} iterations".format(max_iters)
 
 t.start()
+t.set_timer(10)
 for num_iter in range(max_iters):
     
     print "Iteration #{}\t (elapsed time: {})".format(
@@ -83,12 +84,16 @@ for num_iter in range(max_iters):
         W[idx2,:] = v2_update / np.linalg.norm(v2_update)       
         W[idx_neg,:] = v_neg_update / np.linalg.norm(v_neg_update)   
 
+        if num_sampled % 10000 == 0:
+            t.check_timer("==> Iteration #{} || Sample {} / {} <==".format(
+                num_iter+1, num_sampled, len(sampler.event_event_samples_)))
     
     print "\t{:0.3f} samples/sec".format(
         float(num_sampled + 1) / t.lap())
     print "\tAvg. Loss: {:0.5f}".format(total_loss / float(num_sampled + 1))
     print "\tAvg. Neg. Samples: {}\n".format(
         tot_neg_samples / float(num_sampled + 1))
+    np.savetxt("weights.txt", W)
             
 print "Training complete ({} total samples, time elapsed: {})".format(
     num_samples, timer.pretty_time(t.stop()))

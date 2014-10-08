@@ -41,6 +41,16 @@ class Timer(object):
         self.duration = 0
         self.stop_ = None
 
+    def set_timer(self, duration_in_seconds):
+        self.timer_duration_in_seconds_ = duration_in_seconds
+        self.timer_start_ = time.time()
+        
+    def check_timer(self, msg):
+        now = time.time()
+        if now - self.timer_start_ > self.timer_duration_in_seconds_:
+            print msg  
+            self.timer_start_ = now
+
 def timed_function(func, args, msg):
 
     t = Timer()
