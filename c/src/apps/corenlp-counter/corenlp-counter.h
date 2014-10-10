@@ -10,5 +10,11 @@
 #include "apps/corenlp-counter/options.h"
 
 
+typedef enum {
+    CHAMBERS,
+    CHAMBERS_DIR,
+    EMBEDDING,
+    EMBEDDING_DIR
+} cc_mode_t;
 
 #endif
