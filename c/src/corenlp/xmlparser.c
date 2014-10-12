@@ -58,26 +58,27 @@ element_start(
         if (state->_in_dependencies) {
             state->_in_dep = TRUE;            
             cnlp_xml_dbuilder_t *xdb = (cnlp_xml_dbuilder_t *) state->data;
-            xdb->dep_type = cu_char_to_dep_t(atts[1]);
+            xdb->dep_type = cu_char_to_dep_t((const char *) atts[1]);
         }
     } else if (strcmp((char *)name, "governor")==0) {
         if (state->_in_dep) {
             state->_in_governor = TRUE;   
             cnlp_xml_dbuilder_t *xdb = (cnlp_xml_dbuilder_t *) state->data;
-            xdb->gov_idx = atoi(atts[1]);
+            xdb->gov_idx = atoi((const char *) atts[1]);
         }
     } else if (strcmp((char *)name, "dependent")==0) {
         if (state->_in_dep) {
             state->_in_dependent = TRUE;
             cnlp_xml_dbuilder_t *xdb = (cnlp_xml_dbuilder_t *) state->data;
-            xdb->dep_idx = atoi(atts[1]);
+            xdb->dep_idx = atoi((const char *) atts[1]);
             cu_doc_builder_add_dep (
                 xdb->db, xdb->gov_idx, xdb->dep_idx, xdb->dep_type);
         }
 
     } else if (strcmp((char *)name, "dependencies")==0) {
    //     printf ("In dependencies\n");
-        if (strcmp("collapsed-ccprocessed-dependencies", atts[1])==0) {
+        if (strcmp("collapsed-ccprocessed-dependencies", 
+                (const char *) atts[1])==0) {
             state->_in_dependencies = TRUE;
         }
     } else if (strcmp((char *)name, "tokens")==0) {
@@ -162,14 +163,16 @@ _handle_chars(
             if (xdb->token_buffer->len > 0) {
                 g_string_append_c (xdb->token_buffer, ' ');
             } 
-            g_string_append_len (xdb->token_buffer, ch, len);
+            g_string_append_len (
+                xdb->token_buffer, (const gchar *) ch, len);
             
         } else if (state->_in_lemma) {
             cnlp_xml_dbuilder_t *xdb = (cnlp_xml_dbuilder_t *) state->data;
             if (xdb->lemma_buffer->len > 0) {
                 g_string_append_c (xdb->lemma_buffer, ' ');
             } 
-            g_string_append_len (xdb->lemma_buffer, ch, len);
+            g_string_append_len (
+                xdb->lemma_buffer, (const gchar *) ch, len);
             
         } else if (state->_in_pos) {
             cnlp_xml_dbuilder_t *xdb = (cnlp_xml_dbuilder_t *) state->data;

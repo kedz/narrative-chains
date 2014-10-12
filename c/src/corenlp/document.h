@@ -400,8 +400,8 @@ void cu_doc_builder_add_lemma (DBuilder_t *, char *);
 void cu_doc_builder_add_pos (DBuilder_t *, pos_t);
 void cu_doc_builder_add_dep(DBuilder_t *, int, int, dep_t);
 
-pos_t cu_char_to_pos_t(char *);
-dep_t cu_char_to_dep_t(char *);
+pos_t cu_char_to_pos_t(const char *);
+dep_t cu_char_to_dep_t(const char *);
 
 document_t *cu_doc_builder_finalize (DBuilder_t *);
 void cu_doc_builder_free (DBuilder_t **, gboolean);

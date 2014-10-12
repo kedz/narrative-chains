@@ -744,7 +744,7 @@ cu_dep_string(
 }
 
 pos_t cu_char_to_pos_t(
-    char *pos_token
+    const char *pos_token
 ) {
 
     for (int i=0; i < 48 ; i++) {
@@ -763,7 +763,7 @@ pos_t cu_char_to_pos_t(
 
 dep_t 
 cu_char_to_dep_t(
-    char *dep_str
+    const char *dep_str
 ) {
 
     for (int i=0; i < 306; i++) {
