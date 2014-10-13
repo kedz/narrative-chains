@@ -22,6 +22,17 @@ __build_cnlp_docs_from_istream(
     GInputStream *istream,
     gboolean verbose);
 
+void
+__extract_docs_from_tar_file(
+    GInputStream *istream,
+    opt_s *options,
+    gboolean verbose);
+
+int
+__octal_string_to_int(
+    const char *current_char,
+    const unsigned int size);
+
 gboolean
 _is_gz(
     GFile *file);
@@ -45,6 +56,21 @@ gboolean _is_gz(file)
         return FALSE;
     }
 }
+
+int __octal_str_to_int(current_char, input_size)
+    const char *current_char; 
+    const unsigned int input_size;
+{
+    int size = input_size;
+    unsigned int output = 0;
+    while (size > 0) {
+        output = output * 8 + *current_char - '0';
+        current_char++;
+        size--;
+    }
+    return output;
+}
+
 
 GPtrArray *
 __validate_files(file_args, recurse, verbose)
@@ -116,8 +142,6 @@ __process_file(file, options, verbose)
    
     const char *content_type = g_file_info_get_content_type (file_info);
     char *desc = g_content_type_get_description (content_type); 
-    printf (
-        "%s : content type: %s : content desc %s\n", path, content_type, desc);
     if (strcmp(desc, "XML document")==0) {
         GInputStream *istream = (GInputStream *) g_file_read (
             file, NULL, NULL);
@@ -156,11 +180,29 @@ __process_file(file, options, verbose)
         g_object_unref (fistream);
         g_object_unref (decompressor);
     
+   } else if (strcmp(desc, "Tar archive (gzip-compressed)")==0) {
+        GConverter *decompressor = NULL;
+        decompressor = (GConverter *) g_zlib_decompressor_new (
+            G_ZLIB_COMPRESSOR_FORMAT_GZIP);            
+        GInputStream *istream = (GInputStream *) g_file_read (
+            file, NULL, NULL);
+        
+        GInputStream *fistream = g_converter_input_stream_new (
+            istream, decompressor);
+        GInputStream *bfistream = g_buffered_input_stream_new_sized (
+            fistream, 65536);
+        __extract_docs_from_tar_file (bfistream, options, verbose);
+
+
+        g_input_stream_close (istream, NULL, NULL);
+        g_object_unref (istream);   
+        g_object_unref (fistream);
+        g_object_unref (bfistream);
+        g_object_unref (decompressor);
    }
 
     g_object_unref (file_info);
     free (path);
-    //free ((char *) content_type);
     free (desc);
 
 }
@@ -204,6 +246,65 @@ __build_cnlp_docs_from_istream(istream, verbose)
     free (buffer);
     return xdb.doc;
 
+}
+
+void
+__extract_docs_from_tar_file(istream, options, verbose)
+    GInputStream *istream;
+    opt_s *options;
+    gboolean verbose;
+{
+
+    gsize buffer_size = 512;
+    char *buffer = (char *) malloc (sizeof(char) * buffer_size);
+    for (;;) {
+        gssize read = g_input_stream_read (
+            istream, (void *) buffer, 512, NULL, NULL);
+        if (read!=512)
+            break; 
+
+        if (buffer[0] == '\0') {
+            break;    
+        }
+   
+        if (verbose==TRUE) {
+            printf ("Doc filename: %s\n", buffer); 
+        }
+
+        int size = __octal_str_to_int(&buffer[124], 11);
+        int pad = (512 - (size % 512)) % 512;
+
+        GError *error = NULL;
+        char *file_buffer = (char *) malloc(sizeof(char) * size);
+        int file_bytes_read = 0;
+        while (file_bytes_read!=size) {
+            read = g_input_stream_read (
+                istream,  &file_buffer[file_bytes_read], 
+                size-file_bytes_read, NULL, &error);
+            file_bytes_read += read;
+            if (error!=NULL || read == 0) {
+                fprintf (stderr, "MESSAGE: %s\n", error->message);
+                exit (EXIT_FAILURE);
+            }
+        }
+
+        document_t *doc = NULL; 
+        doc = cu_build_cnlp_docs_memory_full (file_buffer, size);
+
+        if (doc!=NULL) {
+            if (options->_process_document!=NULL) {
+                (*(options->_process_document)) (options->data, doc);       
+            }
+            cu_document_free (&doc, TRUE);
+        }
+
+        read = g_input_stream_read (
+                istream, file_buffer, 
+                pad, NULL, NULL);
+
+        free (file_buffer);
+    }
+    free (buffer);
 }
 
 int main(int argc, char **argv) 
@@ -291,20 +392,6 @@ int main(int argc, char **argv)
 
     }
 
-//        usage();
-//        exit(1);
-//    } else if (strcmp(mode, "chambers")==0) {        
-//        options = cu_corenlp_counter_chambers_options_new();
-//        if (verbose)
-//            printf ("Producing Chambers-style narrative chain counts...\n");
-//    //} else if (strcmp(mode, "?")==0) {
-//    //opt_s * options = nc_options_new();
-//        
-//    } else {
-//        printf ("%s is not a valid mode.\n");
-//        exit(1);
-//    }
- 
 
     for (int f=0; f < valid_files->len; f++) {
         GFile *file = (GFile *) valid_files->pdata[f];
@@ -322,46 +409,7 @@ int main(int argc, char **argv)
     g_ptr_array_set_free_func (valid_files, (GDestroyNotify) g_object_unref);
     g_ptr_array_free (valid_files, TRUE);
 
-//
-//    if (mode==NULL) {
-//        usage();
-//        exit(1);
-//    } else if (strcmp(mode, "chambers")==0) {        
-//        options = cu_corenlp_counter_chambers_options_new();
-//        if (verbose)
-//            printf ("Producing Chambers-style narrative chain counts...\n");
-//    //} else if (strcmp(mode, "?")==0) {
-//    //opt_s * options = nc_options_new();
-//        
-//    } else {
-//        printf ("%s is not a valid mode.\n");
-//        exit(1);
-//    }
-//    printf ("Mode is %s\n", mode); 
-////    if (mode == STATS) {
-////        g_print("Making struct\n");
-////        options->data = new_stats_data();
-////        options->_xml_file_handler = stats_xml_file_handler;
-////        options->_x_gzip_file_handler = stats_x_gzip_file_handler;
-////        options->_finish_processing = stats_finish_processing;
-////        options->_free = stats_free;
-////    }
-//
-//    const char *path = NULL;
-//    int num_errors = 0;
-//    for (int i=0; i < pathlist->len; i++) {
-//        path = (char *) g_ptr_array_index (pathlist, i);
-//        CU_NEWSTRCPY(path_cpy, path)
-//        num_errors += 
-//            process_path (options, (gchar *) path_cpy, recurse, NULL, verbose);        
-//
-//        //g_thread_pool_push (pool, path, NULL);
-//        //num_errors += process_path (options, path, recurse, pool);
-//    }
-//    g_ptr_array_free (pathlist, TRUE);
-//
-////    char *outpath = NULL;
-
+    /* Write output */
     if (options->_finish_processing != NULL) {
         if (_is_gz (output_file)) {
             GOutputStream *ostream = (GOutputStream *) g_file_replace (
@@ -402,15 +450,12 @@ int main(int argc, char **argv)
     }
 
     g_object_unref (output_file); 
+
     /* Clean up program options/counts data structures. */
     if (options->_free != NULL)
         (options->_free) (options->data);
 
     free (options);
-//
-//    if (num_errors > 0) {
-//        printf ("Finished with %d errors.\n", num_errors);
-//    }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
