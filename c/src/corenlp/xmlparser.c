@@ -1,33 +1,26 @@
 #include "corenlp/xmlparser.h"
 
-typedef struct cnlp_xmlp_state_s {
+cnlp_xmlp_state_s *cu_cnlp_xmlp_state_new ()
+{
+    cnlp_xmlp_state_s *state = (cnlp_xmlp_state_s *) malloc (
+        sizeof(cnlp_xmlp_state_s));
 
-    void *data;
+    state->data = NULL;
+    state->_in_sentences = FALSE;
+    state->_in_sentence = FALSE;
+    state->_in_dependencies = FALSE;
+    state->_in_dep = FALSE;
+    state->_in_governor = FALSE;
+    state->_in_dependent = FALSE;
+    state->_in_tokens = FALSE;
+    state->_in_token = FALSE;
+    state->_in_word = FALSE;
+    state->_in_lemma = FALSE;
+    state->_in_pos = FALSE;
 
-    gboolean _in_sentences;
-    gboolean _in_sentence;
-    gboolean _in_dependencies;
-    gboolean _in_dep;
-    gboolean _in_governor;
-    gboolean _in_dependent;
-    gboolean _in_tokens;
-    gboolean _in_token;
-    gboolean _in_word;
-    gboolean _in_lemma;
-    gboolean _in_pos;
+    return state;
 
-} cnlp_xmlp_state_s;
-
-typedef struct cnlp_xml_dbuilder_t {
-    DBuilder_t *db;
-    document_t *doc;
-    GString *token_buffer;
-    GString *lemma_buffer;
-    int gov_idx, dep_idx;
-    dep_t dep_type;
-
-} cnlp_xml_dbuilder_t;
-
+}
 
 static void
 element_start(
@@ -250,6 +243,11 @@ static xmlSAXHandler corenlp_xml_parser = {
     NULL                        /* xmlStructuredErrorFunc */
 };
 
+xmlSAXHandler *
+get_corenlp_xml_sax_handler_ptr()
+{
+    return &corenlp_xml_parser;
+}
 
 document_t *
 cu_build_cnlp_docs_memory_full(

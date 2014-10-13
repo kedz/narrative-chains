@@ -9,6 +9,6 @@
 #include <zlib.h>
 
 void _chambers_nc_xml_file_handler(gchar *, gpointer);        
-opt_s *cu_corenlp_counter_chambers_options_new();
+opt_s *cu_corenlp_counter_chambers_options_new(gboolean);
 
 #endif
