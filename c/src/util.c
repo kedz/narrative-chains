@@ -30,8 +30,13 @@ cu_walk_dir(dir, data, dir_callback, file_callback)
             child_enum, NULL, NULL))!=NULL)
           {
 
-            GFile *child = g_file_enumerator_get_child (
-                child_enum, child_info);
+            const char *name = g_file_info_get_name (child_info);
+            GFile *child = g_file_get_child (
+                g_file_enumerator_get_container (child_enum), name);
+
+            //GFile *child = g_file_enumerator_get_child (
+            //    child_enum, child_info);
+            ///free (name);
 
             type = g_file_query_file_type (
                 child, G_FILE_QUERY_INFO_NONE, NULL);
