@@ -13,14 +13,15 @@
 #include "corenlp/document.h"
 //#include "apps/corenlp-counter/nc_counter.h"
 #include "apps/corenlp-counter/chambers-nc-counts.h"
+#include "apps/corenlp-counter/protagonist-nc-counts.h"
 #include "apps/corenlp-counter/options.h"
 
 
 typedef enum {
     CHAMBERS,
     CHAMBERS_DIR,
-    EMBEDDING,
-    EMBEDDING_DIR
+    PROTAGONIST,
+    PROTAGONIST_DIR
 } cc_mode_t;
 
 #endif

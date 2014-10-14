@@ -298,11 +298,11 @@ __extract_docs_from_tar_file(istream, options, verbose)
             cu_document_free (&doc, TRUE);
         }
 
+        free (file_buffer);
         read = g_input_stream_read (
-                istream, file_buffer, 
+                istream, buffer, 
                 pad, NULL, NULL);
 
-        free (file_buffer);
     }
     free (buffer);
 }
@@ -333,10 +333,10 @@ int main(int argc, char **argv)
                         mode = CHAMBERS;
                     } else if (strcmp(argv[i], "chambers-dir")==0) {
                         mode = CHAMBERS_DIR;
-                    } else if (strcmp(argv[i],"embedding")==0) {
-                        mode = EMBEDDING;
-                    } else if (strcmp(argv[i], "embedding-dir")==0) {
-                        mode = EMBEDDING_DIR;
+                    } else if (strcmp(argv[i],"protagonist")==0) {
+                        mode = PROTAGONIST;
+                    } else if (strcmp(argv[i], "protagonist-dir")==0) {
+                        mode = PROTAGONIST_DIR;
                     }
                 }
             } else if (strcmp(argv[i], "-o")==0) {
@@ -382,14 +382,15 @@ int main(int argc, char **argv)
             printf ("Generating counts for Chambers directional model.\n");
         options = cu_corenlp_counter_chambers_options_new (TRUE);
 
-    } else if (mode==EMBEDDING) {
+    } else if (mode==PROTAGONIST) {
         if (verbose==TRUE)
-            printf ("Generating counts for embedding model.\n");
+            printf ("Generating counts for protagonist model.\n");
+        options = cu_corenlp_counter_protagonist_options_new (FALSE);
 
-    } else if (mode==EMBEDDING_DIR) {
+    } else if (mode==PROTAGONIST_DIR) {
         if (verbose==TRUE)
-            printf ("Generating counts for embedding directional model.\n");
-
+            printf ("Generating counts for protagonist directional model.\n");
+        options = cu_corenlp_counter_protagonist_options_new (TRUE);
     }
 
 

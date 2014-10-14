@@ -17,7 +17,7 @@ python: python_build/nchain.so
 apps: $(BIN)/corenlp-counter 
 
 $(BIN)/corenlp-counter: corenlp util cooc
-	$(CC) $(CFLAGS) $(OBJ)/util.o $(OBJ)/corenlp/document.o $(OBJ)/corenlp/xmlparser.o $(OBJ)/cooc/nchains.o $(SRC)/apps/corenlp-counter/corenlp-counter.c $(SRC)/apps/corenlp-counter/chambers-nc-counts.c -o $(BIN)/corenlp-counter $(LDLIBS)
+	$(CC) $(CFLAGS) $(OBJ)/util.o $(OBJ)/corenlp/document.o $(OBJ)/corenlp/xmlparser.o $(OBJ)/cooc/nchains.o $(SRC)/apps/corenlp-counter/corenlp-counter.c $(SRC)/apps/corenlp-counter/chambers-nc-counts.c $(SRC)/apps/corenlp-counter/protagonist-nc-counts.c -o $(BIN)/corenlp-counter $(LDLIBS)
 
     #$(OBJ)/cooc/nchains.o $(OBJ)/apps/corenlp-counter/chambers-nc-counts.o $(SRC)/apps/corenlp-counter/corenlp-counter.c $(SRC)/apps/corenlp-counter/nc_counter.c -o $(BIN)/corenlp-counter $(LDLIBS)
 
