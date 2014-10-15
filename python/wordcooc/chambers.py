@@ -4,12 +4,13 @@ from collections import OrderedDict, defaultdict
 import random
 
 class ProtagonistModel(object):
-    def __init__(self, marg_counts, joint_counts, marg_total, joint_total):
+    def __init__(self, marg_counts, joint_counts,
+                 marg_total, joint_total, directional=False):
         self.marg_counts = marg_counts
         self.joint_counts = joint_counts
         self.marg_total = marg_total
         self.joint_total = joint_total
-
+        self.directional = directional
 
 
     def pmi(self, event1, event2):
@@ -19,6 +20,11 @@ class ProtagonistModel(object):
         if e1_count == 0 or e2_count == 0:
             return float('nan')
         
+        if self.directional is False:
+            joint_key = self._joint_key(event1, event2)
+        else:
+            joint_key = '{}\t{}'.format(event1, event2)
+
         joint_count = self.joint_counts.get(self._joint_key(event1, event2), 0)
         if joint_count == 0:   
             return float('nan')
@@ -82,7 +88,7 @@ def read_protagonist_model_counts(path):
 
 class ProtagonistModelSampler:
     def __init__(self, idx2event_dict, 
-        event_samples, event_event_samples, idx2cooc):
+        event_samples, event_event_samples, idx2cooc, is_direct):
 
         self.idx2event_dict_ = idx2event_dict
         
@@ -96,6 +102,7 @@ class ProtagonistModelSampler:
 
         self.idx2cooc_ = idx2cooc
         self.num_events = len(idx2event_dict)
+        self.is_direct = is_direct
 
 
     def positive_sample(self):
@@ -131,7 +138,8 @@ class ProtagonistModelSampler:
 
     
     
-def read_protagonist_model_counts_to_sampler(path):
+def read_protagonist_model_counts_to_sampler(path, freq_cutoff,
+                                             is_directional):
  
     event_samples = []
     event_event_samples = []  
@@ -150,30 +158,38 @@ def read_protagonist_model_counts_to_sampler(path):
             if len(items) == 2:
                 event = intern(items[0])
                 count = int(items[1])
-                if idx2event.get(idx, None) is None:
-                    idx2event[idx] = event
-                    event2idx[event] = idx
-                    for i in range(count):
-                        event_samples.append(idx)
-                    idx2cooc.append(set())
-                    idx += 1
+                if count > freq_cutoff:
+                    if idx2event.get(idx, None) is None:
+                        idx2event[idx] = event
+                        event2idx[event] = idx
+                        for i in range(count):
+                            event_samples.append(idx)
+                        idx2cooc.append(set())
+                        idx += 1
     
             elif len(items) == 3:
                 event1 = intern(items[0])
                 event2 = intern(items[1])
                 if event1 == event2:
                     continue
+                if event1 not in event2idx:
+                    continue
+                if event2 not in event2idx:
+                    continue
+
                 count = int(items[2]) 
                 idx1 = event2idx[event1]
                 idx2 = event2idx[event2]
                 idx2cooc[idx1].add(idx2)
-                idx2cooc[idx2].add(idx1)
+                if is_directional is False:
+                    idx2cooc[idx2].add(idx1)
                 for i in range(count):
                     event_event_samples.append((idx1, idx2))
-                   
+
     event2idx = None
-    return ProtagonistModelSampler(idx2event, 
-        event_samples, event_event_samples, idx2cooc)
+    return ProtagonistModelSampler(
+        idx2event, event_samples, event_event_samples,
+        idx2cooc, is_directional)
                      
                # print event, count
                 #prot_event_pairs.append((intern(prot), intern(event)))
