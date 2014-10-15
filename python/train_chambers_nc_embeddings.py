@@ -93,7 +93,7 @@ def main(counts_file, dict_file, matrix_file, freq_cutoff, num_dims,
         v2 = W[r2,:]
         sim = np.dot(v1, v2.T)
 
-        while num_neg_samples < sampler.num_events:
+        while num_neg_samples < len(sampler.event_samples_):
             num_neg_samples += 1
             idx_neg = sampler.negative_sample(r1)
             vn = W[idx_neg,:]
@@ -123,7 +123,7 @@ def main(counts_file, dict_file, matrix_file, freq_cutoff, num_dims,
         vn = W[rn,:]
 
         # Compute updates
-        v1_update = v1 - learning_rate * (-v1 + vn)
+        v1_update = v1 - learning_rate * (-v2 + vn)
         v2_update = v2 - learning_rate * (-v1)
         v_neg_update = vn - learning_rate * v1
 
