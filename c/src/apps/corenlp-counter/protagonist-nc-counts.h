@@ -17,8 +17,13 @@ typedef struct protagonist_nc_counts_s {
     GHashTable *prot;
     GHashTable *event;
     GHashTable *joint;    
+    gboolean is_directed;
+    gboolean is_sequence;
 } prot_nc_counts_t;
 
-opt_s *cu_corenlp_counter_protagonist_options_new(gboolean);
+opt_s *
+cu_corenlp_counter_protagonist_options_new(
+    gboolean is_directed,
+    gboolean is_sequence);
 
 #endif

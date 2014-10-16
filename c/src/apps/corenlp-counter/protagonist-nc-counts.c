@@ -1,29 +1,73 @@
 #include "apps/corenlp-counter/protagonist-nc-counts.h"
 
-char *_prot_joint_key(p, a, b)
-    const char *p;
-    const char *a;
-    const char *b;
-{
+// Forward Declarations of private functions
+prot_nc_counts_t *
+__cu_pnc_counts_new(
+    gboolean is_directed,
+    gboolean is_sequence);
 
-    char *key = NULL;
-    int cmp = strcmp(a, b);
-    if (cmp < 0) {
-        if (asprintf (&key, "%s\t%s\t%s", p, a, b)==-1) {
-            fprintf (stderr, "Could not allocate space for hash key!\n");
-            exit (EXIT_FAILURE);
-        }
-    } else {
-        if(asprintf (&key, "%s\t%s\t%s", p, b, a)==-1) {
-            fprintf (stderr, "Could not allocate space for hash key!\n");
-            exit (EXIT_FAILURE);
-        }
-    }
-    return key;
+void
+__cu_pnc_free(
+    void *data);
+
+void
+__cu_pnc_count_chains(
+    const void *data,
+    const document_t *doc);
+
+void
+__cu_pnc_finish_processing(
+    void *data,
+    GOutputStream *ostream);
+
+void
+__pnc_count_singleton(
+    GHashTable *table,
+    char *token,
+    unsigned int count);
+
+void
+__pnc_count_joint(
+    GHashTable *table,
+    char *protag,
+    char *event1,
+    char *event2, 
+    gboolean is_directed);        
+
+char *
+__pnc_joint_key(
+    const char *p,
+    const char *a,
+    const char *b,
+    const gboolean is_directed);
+
+/**
+ * Create protagonist implementation of options interface.
+ * That is, this struct tells corenlp-counter how to make protagonist model
+ * counts from a corenlp document.
+ **/
+opt_s *
+cu_corenlp_counter_protagonist_options_new(is_directed, is_sequence)
+    gboolean is_directed;
+    gboolean is_sequence;
+{
+    opt_s *options = NULL;
+    options = (opt_s *) malloc (sizeof(opt_s));
+    options->data = __cu_pnc_counts_new (is_directed, is_sequence);
+    options->_process_document = __cu_pnc_count_chains;
+    options->_finish_processing = __cu_pnc_finish_processing;
+    options->_free = __cu_pnc_free;
+    return options;
 }
 
+/**
+ *  Create a new counts struct to keep narrative chain counts.
+ * 
+ **/
 prot_nc_counts_t *
-__protagonist_nc_counts_new()
+__cu_pnc_counts_new(is_directed, is_sequence)
+    gboolean is_directed;
+    gboolean is_sequence;
 {
     prot_nc_counts_t *counts = malloc (sizeof(prot_nc_counts_t));
     counts->prot = g_hash_table_new_full (
@@ -32,130 +76,67 @@ __protagonist_nc_counts_new()
         g_str_hash, g_str_equal, free, free);
     counts->joint = g_hash_table_new_full (
         g_str_hash, g_str_equal, free, free);
+    counts->is_directed = is_directed;
+    counts->is_sequence = is_sequence;
     return counts;
 }
 
 void
-_protagonist_nc_count_chains_directed(data, doc)
-    const void *data;
-    const document_t *doc;
+__cu_pnc_free(data)
+    void *data;
 {
     prot_nc_counts_t *counts = (prot_nc_counts_t *) data;
-    chambers_nc_untyped_array_t *nchains =
-        cu_extract_chambers_nc_untyped_array (doc);
-    if (nchains->num_chains > 0) {
-        chambers_nc_untyped_t *chain = nchains->chains[0];
-
-        unsigned int *pcount = NULL;
-        pcount = g_hash_table_lookup (counts->prot, chain->protag); 
-        if (pcount==NULL) {
-            pcount = malloc (sizeof(unsigned int));
-            *pcount = chain->num_events;
-            CU_NEWSTRCPY(prot_cpy, chain->protag);
-            g_hash_table_insert (counts->prot, prot_cpy, pcount);
-        } else {
-            *pcount = *pcount + chain->num_events;
-        }
-
-        char *p = chain->protag;
-        for (int i=0; i < chain->num_events; i++) {
-            unsigned int *ecount = NULL;
-            ecount = g_hash_table_lookup (counts->event, chain->events[i]); 
-            if (ecount==NULL) {
-                ecount = malloc (sizeof(unsigned int));
-                *ecount = 1;
-                CU_NEWSTRCPY(event_cpy, chain->events[i]);
-                g_hash_table_insert (counts->event, event_cpy, ecount);
-            } else {
-                *ecount = *ecount + 1;
-            }           
-            
-            char *e1 = chain->events[i];
-            for (int j=i+1; j < chain->num_events; j++) {
-                char *e2 = chain->events[j];
-                char *key = NULL;
-                if (asprintf (&key, "%s\t%s\t%s", p, e1, e2)==-1) {
-                    fprintf (stderr, "Could not allocate space for key\n");
-                    exit(EXIT_FAILURE);
-                }
-           
-                unsigned int *jcount = NULL; 
-                jcount = g_hash_table_lookup (counts->joint, key); 
-                if (jcount==NULL) {
-                    jcount = malloc (sizeof(unsigned int));
-                    *jcount = 1;
-                    //CU_NEWSTRCPY(event_cpy, chain->events[i]);
-                    g_hash_table_insert (counts->joint, key, jcount);
-                } else {
-                    *jcount = *jcount + 1;
-                    free (key);
-                }
-            }
-        }
-    }
-    cu_chambers_nc_untyped_array_free (&nchains);
-
+    g_hash_table_destroy (counts->prot);
+    g_hash_table_destroy (counts->event);
+    g_hash_table_destroy (counts->joint);
+    free (counts);
 }
 
+/**
+ * Count the events in the longest narrative chain in doc.
+ **/
 void
-_protagonist_nc_count_chains_undirected(data, doc)
+__cu_pnc_count_chains(data, doc)
     const void *data;
     const document_t *doc;
 {
+
     prot_nc_counts_t *counts = (prot_nc_counts_t *) data;
     chambers_nc_untyped_array_t *nchains =
         cu_extract_chambers_nc_untyped_array (doc);
     if (nchains->num_chains > 0) {
+
         chambers_nc_untyped_t *chain = nchains->chains[0];
+        __pnc_count_singleton (counts->prot, chain->protag, chain->num_events);
 
-        unsigned int *pcount = NULL;
-        pcount = g_hash_table_lookup (counts->prot, chain->protag); 
-        if (pcount==NULL) {
-            pcount = malloc (sizeof(unsigned int));
-            *pcount = chain->num_events;
-            CU_NEWSTRCPY(prot_cpy, chain->protag);
-            g_hash_table_insert (counts->prot, prot_cpy, pcount);
-        } else {
-            *pcount = *pcount + chain->num_events;
-        }
-
-        char *p = chain->protag;
         for (int i=0; i < chain->num_events; i++) {
-            unsigned int *ecount = NULL;
-            ecount = g_hash_table_lookup (counts->event, chain->events[i]); 
-            if (ecount==NULL) {
-                ecount = malloc (sizeof(unsigned int));
-                *ecount = 1;
-                CU_NEWSTRCPY(event_cpy, chain->events[i]);
-                g_hash_table_insert (counts->event, event_cpy, ecount);
+            __pnc_count_singleton (counts->event, chain->events[i], 1);           
+
+            if (counts->is_sequence==TRUE) {
+                if (i + 1 < chain->num_events) {
+                    __pnc_count_joint (
+                        counts->joint, chain->protag, 
+                        chain->events[i], chain->events[i+1], 
+                        counts->is_directed);        
+                }
             } else {
-                *ecount = *ecount + 1;
-            }           
-            
-            char *e1 = chain->events[i];
-            for (int j=i+1; j < chain->num_events; j++) {
-                char *e2 = chain->events[j];
-                char *key = _prot_joint_key (p, e1, e2);
-                unsigned int *jcount = NULL; 
-                jcount = g_hash_table_lookup (counts->joint, key); 
-                if (jcount==NULL) {
-                    jcount = malloc (sizeof(unsigned int));
-                    *jcount = 1;
-                    //CU_NEWSTRCPY(event_cpy, chain->events[i]);
-                    g_hash_table_insert (counts->joint, key, jcount);
-                } else {
-                    *jcount = *jcount + 1;
-                    free (key);
+                for (int j=i+1; j < chain->num_events; j++) {
+                    __pnc_count_joint (
+                        counts->joint, chain->protag, 
+                        chain->events[i], chain->events[j], 
+                        counts->is_directed);        
                 }
             }
         }
     }
     cu_chambers_nc_untyped_array_free (&nchains);
-
 }
 
-
-void _protagonist_nc_finish_processing (data, ostream) 
+/**
+ * Write out counts to output stream.
+ **/
+void
+__cu_pnc_finish_processing (data, ostream) 
     void *data;
     GOutputStream *ostream;
 {
@@ -198,37 +179,78 @@ void _protagonist_nc_finish_processing (data, ostream)
         free (line);
 
     }
-
-
-//    cu_chambers_nc_counts_dump ((chambers_nc_counts_t *) data, ostream);
 }
 
-void
-_protagonist_nc_free(data)
-    const void *data;
+/**
+ * Add 'count' to the count of 'token' in 'table'. Helper func for counting
+ * events and protagonists. 
+ **/
+void __pnc_count_singleton(table, token, count)
+    GHashTable *table;
+    char *token;
+    unsigned int count;
 {
-    prot_nc_counts_t *counts = (prot_nc_counts_t *) data;
-    g_hash_table_destroy (counts->prot);
-    g_hash_table_destroy (counts->event);
-    g_hash_table_destroy (counts->joint);
-    free (counts);
-
-}
-
-opt_s *
-cu_corenlp_counter_protagonist_options_new(directed)
-    gboolean directed;
-{
-    opt_s *options = NULL;
-    options = (opt_s *) malloc (sizeof(opt_s));
-    options->data = __protagonist_nc_counts_new ();
-    if (directed==TRUE) {
-        options->_process_document = _protagonist_nc_count_chains_directed;
+    unsigned int *count_ptr = NULL;
+    count_ptr = g_hash_table_lookup (table, token); 
+    if (count_ptr==NULL) {
+        count_ptr = malloc (sizeof(unsigned int));
+        *count_ptr = count;
+        CU_NEWSTRCPY(token_cpy, token);
+        g_hash_table_insert (table, token_cpy, count_ptr);
     } else {
-        options->_process_document = _protagonist_nc_count_chains_undirected;
+        *count_ptr = *count_ptr + count;
     }
+}
 
-    options->_finish_processing = _protagonist_nc_finish_processing;
-    options->_free = _protagonist_nc_free;
-    return options;
+/**
+ * Increment count of (protag,event1,event2) in 'table'. 
+ * Helper func for counting narrative chain segments.
+ * If is_directed is FALSE, events are put in lexical order. 
+ **/
+void
+__pnc_count_joint(table, protag, event1, event2, is_directed)
+    GHashTable *table;
+    char *protag;
+    char *event1;
+    char *event2; 
+    gboolean is_directed;        
+{
+    char *key = __pnc_joint_key (protag, event1, event2, is_directed);
+    unsigned int *count_ptr = NULL; 
+    count_ptr = g_hash_table_lookup (table, key); 
+    if (count_ptr==NULL) {
+        count_ptr = malloc (sizeof(unsigned int));
+        *count_ptr = 1;
+        g_hash_table_insert (table, key, count_ptr);
+    } else {
+        *count_ptr = *count_ptr + 1;
+        free (key);
+    }
+}
+
+/**
+ * Create hash key for protagonist 'p' and event pair 'a' and 'b'.
+ * If is_directed is False, 'a' and 'b' are put into lexical order.
+ **/
+char *
+__pnc_joint_key(p, a, b, is_directed)
+    const char *p;
+    const char *a;
+    const char *b;
+    const gboolean is_directed;
+{
+
+    char *key = NULL;
+    if (is_directed==TRUE || strcmp(a, b) < 0) {
+        if (asprintf (&key, "%s\t%s\t%s", p, a, b)==-1) {
+            fprintf (stderr, "Could not allocate space for hash key!\n");
+            exit (EXIT_FAILURE);
+        }
+    } else {
+        if(asprintf (&key, "%s\t%s\t%s", p, b, a)==-1) {
+            fprintf (stderr, "Could not allocate space for hash key!\n");
+            exit (EXIT_FAILURE);
+        }
+    }
+    return key;
 }

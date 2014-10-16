@@ -1,10 +1,11 @@
 #include "cooc/nchains.h"
 
 //Forward declaration of private functions
-char *
-_joint_key(
-    const char *a,
-    const char *b);
+
+//char *
+//_joint_key(
+//    const char *a,
+//    const char *b);
 
 char *
 _recover_verb_lemma_prt(
@@ -133,109 +134,109 @@ cu_chambers_nc_untyped_array_free(chains)
     *chains = NULL;
 }
 
-chambers_nc_counts_t *
-cu_chambers_nc_counts_new()
-{
-    chambers_nc_counts_t *counts = NULL;
-    counts = (chambers_nc_counts_t *) malloc (sizeof(chambers_nc_counts_t));
-    counts->joint = g_hash_table_new_full (
-        g_str_hash, g_str_equal, free, free);
-    counts->marginal = g_hash_table_new_full (
-        g_str_hash, g_str_equal, free, free);
-    counts->joint_total = 0;
-    counts->marginal_total = 0;
-
-    return counts;
-}
-
-void cu_chambers_nc_counts_free(counts)
-    chambers_nc_counts_t **counts;
-{
-    g_hash_table_destroy ((*counts)->joint);
-    g_hash_table_destroy ((*counts)->marginal);
-    free ((*counts));
-    *counts = NULL;
-}
-
-
-void cu_chambers_nc_untyped_count_chains(counts, chains, directed)
-    chambers_nc_counts_t *counts;
-    const chambers_nc_untyped_array_t *chains;
-    gboolean directed;
-{
-
-    if (chains->num_chains > 0) {
-        chambers_nc_untyped_t *chain = chains->chains[0]; 
-        for (int e1=0; e1 < chain->num_events; e1++) {
-            counts->marginal_total++;
-            char *event1 = chain->events[e1];
-            cd_t *cdata = g_hash_table_lookup (counts->marginal, event1);
-            if (cdata==NULL) {
-                cdata = (cd_t *) malloc (sizeof(cd_t));
-                cdata->count = 1;
-                CU_NEWSTRCPY(event, event1)
-                g_hash_table_insert (counts->marginal, event, cdata);
-            } else {
-                cdata->count++;
-            }
-            for (int e2=e1+1; e2 < chain->num_events; e2++) {
-                counts->joint_total++;
-                char *event2 = chain->events[e2];
-                
-                char *key = NULL;
-                if (directed) {
-                    if (asprintf (&key, "%s\t%s", event1, event2)==-1) {
-                        fprintf (stderr, 
-                            "Could not allocate space for key.\n");
-                        exit (EXIT_FAILURE);
-                    }
-                } else {
-                    key = _joint_key(event1, event2);       
-                }
-
-                cd_t *jdata = g_hash_table_lookup (counts->joint, key);
-                if (jdata==NULL) {
-                    jdata = (cd_t *) malloc (sizeof(cd_t));
-                    jdata->count = 1;
-                    g_hash_table_insert (counts->joint, key, jdata);
-                } else {
-                    jdata->count++;
-                    free (key);
-                }
-                         
-            }
-
-        }
-
-    }
-
-//    for (int c=0; c < nchains->len; c++) {
-//        cu_untyped_nchain_free (&nchains->pdata[c]);
+//chambers_nc_counts_t *
+//cu_chambers_nc_counts_new()
+//{
+//    chambers_nc_counts_t *counts = NULL;
+//    counts = (chambers_nc_counts_t *) malloc (sizeof(chambers_nc_counts_t));
+//    counts->joint = g_hash_table_new_full (
+//        g_str_hash, g_str_equal, free, free);
+//    counts->marginal = g_hash_table_new_full (
+//        g_str_hash, g_str_equal, free, free);
+//    counts->joint_total = 0;
+//    counts->marginal_total = 0;
+//
+//    return counts;
+//}
+//
+//void cu_chambers_nc_counts_free(counts)
+//    chambers_nc_counts_t **counts;
+//{
+//    g_hash_table_destroy ((*counts)->joint);
+//    g_hash_table_destroy ((*counts)->marginal);
+//    free ((*counts));
+//    *counts = NULL;
+//}
+//
+//
+//void cu_chambers_nc_untyped_count_chains(counts, chains, directed)
+//    chambers_nc_counts_t *counts;
+//    const chambers_nc_untyped_array_t *chains;
+//    gboolean directed;
+//{
+//
+//    if (chains->num_chains > 0) {
+//        chambers_nc_untyped_t *chain = chains->chains[0]; 
+//        for (int e1=0; e1 < chain->num_events; e1++) {
+//            counts->marginal_total++;
+//            char *event1 = chain->events[e1];
+//            cd_t *cdata = g_hash_table_lookup (counts->marginal, event1);
+//            if (cdata==NULL) {
+//                cdata = (cd_t *) malloc (sizeof(cd_t));
+//                cdata->count = 1;
+//                CU_NEWSTRCPY(event, event1)
+//                g_hash_table_insert (counts->marginal, event, cdata);
+//            } else {
+//                cdata->count++;
+//            }
+//            for (int e2=e1+1; e2 < chain->num_events; e2++) {
+//                counts->joint_total++;
+//                char *event2 = chain->events[e2];
+//                
+//                char *key = NULL;
+//                if (directed) {
+//                    if (asprintf (&key, "%s\t%s", event1, event2)==-1) {
+//                        fprintf (stderr, 
+//                            "Could not allocate space for key.\n");
+//                        exit (EXIT_FAILURE);
+//                    }
+//                } else {
+//                    key = _joint_key(event1, event2);       
+//                }
+//
+//                cd_t *jdata = g_hash_table_lookup (counts->joint, key);
+//                if (jdata==NULL) {
+//                    jdata = (cd_t *) malloc (sizeof(cd_t));
+//                    jdata->count = 1;
+//                    g_hash_table_insert (counts->joint, key, jdata);
+//                } else {
+//                    jdata->count++;
+//                    free (key);
+//                }
+//                         
+//            }
+//
+//        }
+//
 //    }
-//    g_ptr_array_free (nchains, TRUE);
-}
+//
+////    for (int c=0; c < nchains->len; c++) {
+////        cu_untyped_nchain_free (&nchains->pdata[c]);
+////    }
+////    g_ptr_array_free (nchains, TRUE);
+//}
 
 
-char *_joint_key(a, b)
-    const char *a;
-    const char *b;
-{
-
-    char *key = NULL;
-    int cmp = strcmp(a, b);
-    if (cmp < 0) {
-        if (asprintf (&key, "%s\t%s", a, b)==-1) {
-            fprintf (stderr, "Could not allocate space for hash key!\n");
-            exit (EXIT_FAILURE);
-        }
-    } else {
-        if(asprintf (&key, "%s\t%s", b, a)==-1) {
-            fprintf (stderr, "Could not allocate space for hash key!\n");
-            exit (EXIT_FAILURE);
-        }
-    }
-    return key;
-}
+//char *_joint_key(a, b)
+//    const char *a;
+//    const char *b;
+//{
+//
+//    char *key = NULL;
+//    int cmp = strcmp(a, b);
+//    if (cmp < 0) {
+//        if (asprintf (&key, "%s\t%s", a, b)==-1) {
+//            fprintf (stderr, "Could not allocate space for hash key!\n");
+//            exit (EXIT_FAILURE);
+//        }
+//    } else {
+//        if(asprintf (&key, "%s\t%s", b, a)==-1) {
+//            fprintf (stderr, "Could not allocate space for hash key!\n");
+//            exit (EXIT_FAILURE);
+//        }
+//    }
+//    return key;
+//}
 
 int _chambers_untyped_len_cmp(a, b)
     const gpointer a;
@@ -525,35 +526,35 @@ _recover_nn(s, noun_idx)
 //}
 //
 //
-void cu_chambers_nc_counts_dump(counts, ostream)
-    chambers_nc_counts_t *counts;
-    GOutputStream *ostream;
-{
-    GHashTableIter iter;
-    gpointer event, event_count;  
-
-    g_hash_table_iter_init (&iter, counts->marginal);
-    while (g_hash_table_iter_next (&iter, &event, &event_count)) {
-
-        char *line = NULL;
-        gsize line_size = asprintf (&line, "%s\t%d\n",
-            (char *) event, ((cd_t *)event_count)->count);
-        g_output_stream_write (
-            ostream, line, line_size, NULL, NULL); 
-        free (line);
-    }
-
-    g_hash_table_iter_init (&iter, counts->joint);
-    while (g_hash_table_iter_next (&iter, &event, &event_count)) {
-
-        char *line = NULL;
-        gsize line_size = asprintf (&line, "%s\t%d\n",
-            (char *) event, ((cd_t *)event_count)->count);
-        g_output_stream_write (
-            ostream, line, line_size, NULL, NULL); 
-        free (line);
-    } 
-}
+//void cu_chambers_nc_counts_dump(counts, ostream)
+//    chambers_nc_counts_t *counts;
+//    GOutputStream *ostream;
+//{
+//    GHashTableIter iter;
+//    gpointer event, event_count;  
+//
+//    g_hash_table_iter_init (&iter, counts->marginal);
+//    while (g_hash_table_iter_next (&iter, &event, &event_count)) {
+//
+//        char *line = NULL;
+//        gsize line_size = asprintf (&line, "%s\t%d\n",
+//            (char *) event, ((cd_t *)event_count)->count);
+//        g_output_stream_write (
+//            ostream, line, line_size, NULL, NULL); 
+//        free (line);
+//    }
+//
+//    g_hash_table_iter_init (&iter, counts->joint);
+//    while (g_hash_table_iter_next (&iter, &event, &event_count)) {
+//
+//        char *line = NULL;
+//        gsize line_size = asprintf (&line, "%s\t%d\n",
+//            (char *) event, ((cd_t *)event_count)->count);
+//        g_output_stream_write (
+//            ostream, line, line_size, NULL, NULL); 
+//        free (line);
+//    } 
+//}
 
 
 //void cu_nc_count_table_dump(

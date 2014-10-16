@@ -24,29 +24,32 @@ typedef struct chambers_nc_untyped_array_s {
     int num_chains;            
 } chambers_nc_untyped_array_t;
 
-typedef struct chambers_nc_counts_t {
-    GHashTable *joint;
-    GHashTable *marginal;
-    unsigned int marginal_total;
-    unsigned int joint_total;
-} chambers_nc_counts_t;
+//typedef struct chambers_nc_counts_t {
+//    GHashTable *joint;
+//    GHashTable *marginal;
+//    unsigned int marginal_total;
+//    unsigned int joint_total;
+//} chambers_nc_counts_t;
 
-chambers_nc_counts_t *cu_chambers_nc_counts_new();
-void cu_chambers_nc_counts_free(chambers_nc_counts_t **);
+//chambers_nc_counts_t *cu_chambers_nc_counts_new();
+//void cu_chambers_nc_counts_free(chambers_nc_counts_t **);
 //void cu_chambers_nc_count_chains(chambers_nc_counts_t *, GPtrArray *); 
 //void cu_chambers_nc_counts_dump (chambers_nc_counts_t *);
 
 chambers_nc_untyped_array_t *
 cu_extract_chambers_nc_untyped_array(const document_t *);
+
 void cu_chambers_nc_untyped_free(chambers_nc_untyped_t **nchain);
 void cu_chambers_nc_untyped_array_free(chambers_nc_untyped_array_t **chains);
-void cu_chambers_nc_untyped_count_chains(
-    chambers_nc_counts_t *counts,
-    const chambers_nc_untyped_array_t *chains,
-    gboolean directed);
-void cu_chambers_nc_counts_dump(
-    chambers_nc_counts_t *counts,
-    GOutputStream *ostream);
+
+
+//void cu_chambers_nc_untyped_count_chains(
+//    chambers_nc_counts_t *counts,
+//    const chambers_nc_untyped_array_t *chains,
+//    gboolean directed);
+//void cu_chambers_nc_counts_dump(
+//    chambers_nc_counts_t *counts,
+//    GOutputStream *ostream);
 
 //typedef struct nevent_counts_s {
 //    GHashTable *joint;
@@ -57,9 +60,9 @@ void cu_chambers_nc_counts_dump(
 //    GHashTable *totals;
 //} nevent_counts_t;
 //
-typedef struct count_data_s {
-    unsigned int count;
-} cd_t;
+//typedef struct count_data_s {
+//    unsigned int count;
+//} cd_t;
 
 //typedef struct tot_data_s {
 //    unsigned int marg_events;

@@ -38,7 +38,7 @@ _is_gz(
     GFile *file);
 
 void usage(){
-    printf("Usage: corenlp-counter -vr -o <OUTFILE> <PATH1 PATH2...>\n");
+    printf("Usage: corenlp-counter [-v] [-r] [--directed] [--sequence] [-m MODE] [-o OUTFILE] PATH1 PATH2 ...\n");
 }
 
 gboolean _is_gz(file)
@@ -314,6 +314,8 @@ int main(int argc, char **argv)
     gboolean verbose = FALSE;
     GFile *output_file = NULL;
     cc_mode_t mode = CHAMBERS;
+    gboolean is_directed = FALSE;
+    gboolean is_sequence = FALSE;
 
     if (argc == 1) {
 
@@ -323,20 +325,23 @@ int main(int argc, char **argv)
     } else {
         file_args = g_ptr_array_new();
         for (int i=1; i < argc; i++) {
-            if (strcmp(argv[i], "-r")==0) {
+            if (strcmp(argv[i], "-h")==0) {
+                usage ();
+                exit(0);
+            } else if (strcmp(argv[i], "-r")==0) {
                 recurse = TRUE;
             } else if (strcmp(argv[i], "-v")==0) {
                 verbose = TRUE;
+            } else if (strcmp(argv[i], "--directed")==0) {
+                is_directed = TRUE;
+            } else if (strcmp(argv[i], "--sequence")==0) {
+                is_sequence = TRUE;
             } else if (strcmp(argv[i], "-m")==0) {
                 if (++i < argc) {
                     if (strcmp(argv[i],"chambers")==0) {
                         mode = CHAMBERS;
-                    } else if (strcmp(argv[i], "chambers-dir")==0) {
-                        mode = CHAMBERS_DIR;
                     } else if (strcmp(argv[i],"protagonist")==0) {
                         mode = PROTAGONIST;
-                    } else if (strcmp(argv[i], "protagonist-dir")==0) {
-                        mode = PROTAGONIST_DIR;
                     }
                 }
             } else if (strcmp(argv[i], "-o")==0) {
@@ -374,25 +379,40 @@ int main(int argc, char **argv)
     opt_s *options = NULL;
 
     if (mode==CHAMBERS) {
-        if (verbose==TRUE)
-            printf ("Generating counts for Chambers model.\n");
-        options = cu_corenlp_counter_chambers_options_new (FALSE);
-    } else if (mode==CHAMBERS_DIR) {
-        if (verbose==TRUE)
-            printf ("Generating counts for Chambers directional model.\n");
-        options = cu_corenlp_counter_chambers_options_new (TRUE);
-
+        if (verbose==TRUE) {
+            printf ("Generating");
+            if (is_directed==TRUE) {
+                printf (" directed,");
+            } else {
+                printf (" undirected,");
+            }
+            if (is_sequence==TRUE) {
+                printf (" sequential");
+            } else {
+                printf (" global");
+            }
+            printf (" counts for Chambers model.\n");
+        }
+        options = cu_corenlp_counter_chambers_options_new (
+            is_directed, is_sequence);
     } else if (mode==PROTAGONIST) {
-        if (verbose==TRUE)
-            printf ("Generating counts for protagonist model.\n");
-        options = cu_corenlp_counter_protagonist_options_new (FALSE);
-
-    } else if (mode==PROTAGONIST_DIR) {
-        if (verbose==TRUE)
-            printf ("Generating counts for protagonist directional model.\n");
-        options = cu_corenlp_counter_protagonist_options_new (TRUE);
+        if (verbose==TRUE) {
+            printf ("Generating");
+            if (is_directed==TRUE) {
+                printf (" directed,");
+            } else {
+                printf (" undirected,");
+            }
+            if (is_sequence==TRUE) {
+                printf (" sequential");
+            } else {
+                printf (" global");
+            }
+            printf (" counts for protagonist model.\n");
+        }
+        options = cu_corenlp_counter_protagonist_options_new (
+            is_directed, is_sequence);
     }
-
 
     for (int f=0; f < valid_files->len; f++) {
         GFile *file = (GFile *) valid_files->pdata[f];
