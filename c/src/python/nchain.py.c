@@ -13,10 +13,10 @@ extract_untyped_chains(PyObject *self, PyObject* args)
     }
                     
     document_t * doc = cu_build_cnlp_docs_file (path); 
-    GPtrArray *nchains = cu_extract_nar_chains_simple (doc);
-    PyObject* nchains_tuple = PyTuple_New(nchains->len);
-    for (int c=0; c < nchains->len; c++) {
-        nchain_untyped_t *nchain = (nchain_untyped_t *) nchains->pdata[c];
+    chambers_nc_untyped_array_t *nchains = cu_extract_chambers_nc_untyped_array (doc);
+    PyObject* nchains_tuple = PyTuple_New(nchains->num_chains);
+    for (int c=0; c < nchains->num_chains; c++) {
+        chambers_nc_untyped_t *nchain = (chambers_nc_untyped_t *) nchains->chains[c];
         PyObject* nchain_tuple = PyTuple_New(2);
         PyTuple_SetItem(nchain_tuple, 0, PyUnicode_FromString(nchain->protag));
         
@@ -28,10 +28,9 @@ extract_untyped_chains(PyObject *self, PyObject* args)
         PyTuple_SetItem(nchain_tuple, 1, events_tuple);
 
         PyTuple_SetItem(nchains_tuple, c, nchain_tuple);
-        cu_untyped_nchain_free (&nchain);
     }
 
-    g_ptr_array_free (nchains, TRUE);
+    cu_chambers_nc_untyped_array_free (&nchains); 
     cu_document_free (&doc, TRUE);
 
     return nchains_tuple;
