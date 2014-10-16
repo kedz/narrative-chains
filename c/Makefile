@@ -8,13 +8,22 @@ SRC = src
 OBJ = obj
 BIN = bin
 
+MKDIR_P = mkdir -p
+OBJ_DIRS = $(OBJ)/corenlp $(OBJ)/cooc 
+
+.PHONY: clean directories
+
+
 
 #all: tests apps python
-all: apps
+all: directories apps
+
+directories:
+	$(MKDIR_P) $(OBJ_DIRS)
 
 python: python_build/nchain.so 
 
-apps: $(BIN)/corenlp-counter 
+apps: directories $(BIN)/corenlp-counter 
 
 $(BIN)/corenlp-counter: corenlp util cooc
 	$(CC) $(CFLAGS) $(OBJ)/util.o $(OBJ)/corenlp/document.o $(OBJ)/corenlp/xmlparser.o $(OBJ)/cooc/nchains.o $(SRC)/apps/corenlp-counter/corenlp-counter.c $(SRC)/apps/corenlp-counter/chambers-nc-counts.c $(SRC)/apps/corenlp-counter/protagonist-nc-counts.c -o $(BIN)/corenlp-counter $(LDLIBS)
@@ -52,7 +61,7 @@ $(BIN)/corenlp-counter: corenlp util cooc
 #tests/obj/cooc-nchains-tests.o: corenlp $(OBJ)/cooc/nchains.o
 #	$(CC) $(CFLAGS) -c tests/src/cooc-nchains-tests.c -o tests/obj/cooc-nchains-tests.o
 #
-corenlp: $(OBJ)/corenlp/document.o $(OBJ)/corenlp/xmlparser.o
+corenlp: directories $(OBJ)/corenlp/document.o $(OBJ)/corenlp/xmlparser.o
 
 $(OBJ)/corenlp/xmlparser.o:
 	$(CC) $(CFLAGS) -c $(SRC)/corenlp/xmlparser.c -o $(OBJ)/corenlp/xmlparser.o
@@ -60,14 +69,14 @@ $(OBJ)/corenlp/xmlparser.o:
 $(OBJ)/corenlp/document.o:
 	$(CC) $(CFLAGS) -c $(SRC)/corenlp/document.c -o $(OBJ)/corenlp/document.o
 
-cooc: $(OBJ)/cooc/nchains.o
+cooc: directories $(OBJ)/cooc/nchains.o
 
 $(OBJ)/cooc/nchains.o:
 	$(CC) $(CFLAGS) -c $(SRC)/cooc/nchains.c -o $(OBJ)/cooc/nchains.o
 
-util: $(OBJ)/util.o
+util: directories $(OBJ)/util.o
 
-$(OBJ)/util.o:
+$(OBJ)/util.o: directories
 	$(CC) $(CFLAGS) -c $(SRC)/util.c -o $(OBJ)/util.o
 
 clean:

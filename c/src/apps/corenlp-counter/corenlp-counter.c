@@ -307,8 +307,15 @@ __extract_docs_from_tar_file(istream, options, verbose)
     free (buffer);
 }
 
-int main(int argc, char **argv) 
+int 
+main(int argc, char **argv) 
 {
+    #if !GLIB_CHECK_VERSION(2,35,0)
+        /* This is for backward compatibility with old glib versions */
+        g_type_init();
+    #endif
+
+
     GPtrArray *file_args;
     gboolean recurse = FALSE;
     gboolean verbose = FALSE;
